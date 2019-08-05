@@ -1,0 +1,45 @@
+slos:
+  - name: myteam-a.service-a
+    algorithm: multiwindow
+    availabilityObjectivePercent: 99
+    latencyObjectiveBuckets:
+      95: 5s   # 95% < 5s
+      97: 10s  # 97% < 10s
+
+    annotations:
+      message: Service A Error Budget consumption
+      link: https://grafana.myservice.com/URL
+      slack_channel: '_team_a'
+
+    errorRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+    latencyRecord:
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="{{ $latencyBucket }}"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+
+  - name: myteam-b.service-b
+    algorithm: multiwindow
+    availabilityObjectivePercent: 99.9
+    latencyObjectiveBuckets:
+      90: 50ms   # 90% < 50ms
+      95: 100ms  # 95% < 100ms
+
+    annotations:
+      message: Service B Error Budget consumption
+      link:
+      slack_channel: '_team_b'
+
+    errorRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-b", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
+
+    latencyRecord:
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-b", le="{{ $latencyBucket }}"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
