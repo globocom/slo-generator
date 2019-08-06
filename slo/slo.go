@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	algorithms "github.com/globocom/slo-generator/algorithms"
+	methods "github.com/globocom/slo-generator/methods"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
@@ -14,8 +14,8 @@ type SLOSpec struct {
 }
 
 type ExprBlock struct {
-	AlertAlgorithm string `yaml:"alertAlgorithm"`
-	Expr           string `yaml:"expr"`
+	AlertMethod string `yaml:"alertMethod"`
+	Expr        string `yaml:"expr"`
 }
 
 func (block *ExprBlock) ComputeExpr(window, le string) string {
@@ -24,26 +24,26 @@ func (block *ExprBlock) ComputeExpr(window, le string) string {
 }
 
 type SLO struct {
-	Name                         string                     `yaml:"name"`
-	AvailabilityObjectivePercent float64                    `yaml:"availabilityObjectivePercent"`
-	LatencyObjectiveBuckets      []algorithms.LatencyTarget `yaml:"latencyObjectiveBuckets"`
-	ErrorRateRecord              ExprBlock                  `yaml:"errorRateRecord"`
-	LatencyRecord                ExprBlock                  `yaml:"latencyRecord"`
-	Annotations                  map[string]string          `yaml:"annotations"`
+	Name                         string                  `yaml:"name"`
+	AvailabilityObjectivePercent float64                 `yaml:"availabilityObjectivePercent"`
+	LatencyObjectiveBuckets      []methods.LatencyTarget `yaml:"latencyObjectiveBuckets"`
+	ErrorRateRecord              ExprBlock               `yaml:"errorRateRecord"`
+	LatencyRecord                ExprBlock               `yaml:"latencyRecord"`
+	Annotations                  map[string]string       `yaml:"annotations"`
 }
 
 func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
 	alertRules := []rulefmt.Rule{}
 
-	errorAlgorithm := algorithms.Get(slo.ErrorRateRecord.AlertAlgorithm)
-	if errorAlgorithm != nil {
-		errorRules := errorAlgorithm.AlertForError(slo.Name, slo.AvailabilityObjectivePercent, slo.Annotations)
+	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
+	if errorMethod != nil {
+		errorRules := errorMethod.AlertForError(slo.Name, slo.AvailabilityObjectivePercent, slo.Annotations)
 		alertRules = append(alertRules, errorRules...)
 	}
 
-	latencyAlgorithm := algorithms.Get(slo.LatencyRecord.AlertAlgorithm)
-	if latencyAlgorithm != nil {
-		latencyRules := errorAlgorithm.AlertForLatency(slo.Name, slo.LatencyObjectiveBuckets, slo.Annotations)
+	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
+	if latencyMethod != nil {
+		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.LatencyObjectiveBuckets, slo.Annotations)
 		alertRules = append(alertRules, latencyRules...)
 	}
 

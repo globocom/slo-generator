@@ -14,13 +14,13 @@ slos:
       slack_channel: '_team_a'
 
     errorRateRecord:
-      algorithm: multi-window
+      alertMethod: multi-window
       expr: |
         sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
         sum (rate(http_requests_total{job="service-a"}[$window]))
 
     latencyRecord:
-      algorithm: multi-window
+      alertMethod: multi-window
       expr: |
         sum (rate(http_request_duration_seconds_bucket{job="service-a", le="$le"}[$window])) /
         sum (rate(http_requests_total{job="service-a"}[$window]))
@@ -41,13 +41,13 @@ slos:
       slack_channel: '_team_b'
 
     errorRateRecord:
-      algorithm: multi-window
+      alertMethod: multi-window
       expr: |
         sum (rate(http_requests_total{job="service-b", status="5xx"}[$window])) /
         sum (rate(http_requests_total{job="service-b"}[$window]))
 
     latencyRecord:
-      algorithm: multi-window
+      alertMethod: multi-window
       expr: |
         sum (rate(http_request_duration_seconds_bucket{job="service-b", le="$le"}[$window])) /
         sum (rate(http_requests_total{job="service-b"}[$window]))

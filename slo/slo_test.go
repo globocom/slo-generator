@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	algorithms "github.com/globocom/slo-generator/algorithms"
+	methods "github.com/globocom/slo-generator/methods"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +14,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []algorithms.LatencyTarget{
+		LatencyObjectiveBuckets: []methods.LatencyTarget{
 			{
 				LE:     "0.1",
 				Target: 90,
@@ -25,12 +25,12 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 			},
 		},
 		ErrorRateRecord: ExprBlock{
-			AlertAlgorithm: "multi-window",
-			Expr:           "sum(rate(http_errors[$window]))/sum(rate(http_total[$window]))",
+			AlertMethod: "multi-window",
+			Expr:        "sum(rate(http_errors[$window]))/sum(rate(http_total[$window]))",
 		},
 		LatencyRecord: ExprBlock{
-			AlertAlgorithm: "multi-window",
-			Expr:           "sum(rate(http_bucket{le=\"$le\"}[$window]))/sum(rate(http_total[$window]))",
+			AlertMethod: "multi-window",
+			Expr:        "sum(rate(http_bucket{le=\"$le\"}[$window]))/sum(rate(http_total[$window]))",
 		},
 		Annotations: map[string]string{
 			"message":   "Service A has lower SLI",
@@ -240,7 +240,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []algorithms.LatencyTarget{
+		LatencyObjectiveBuckets: []methods.LatencyTarget{
 			{
 				LE:     "0.1",
 				Target: 95,
@@ -251,12 +251,12 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			},
 		},
 		ErrorRateRecord: ExprBlock{
-			AlertAlgorithm: "multi-window",
-			Expr:           "kk",
+			AlertMethod: "multi-window",
+			Expr:        "kk",
 		},
 		LatencyRecord: ExprBlock{
-			AlertAlgorithm: "multi-window",
-			Expr:           "kk",
+			AlertMethod: "multi-window",
+			Expr:        "kk",
 		},
 		Annotations: map[string]string{
 			"message":   "Service A has lower SLI",

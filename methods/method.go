@@ -1,21 +1,21 @@
-package algoritms
+package methods
 
 import "github.com/prometheus/prometheus/pkg/rulefmt"
 
-type AlertAlgorithm interface {
+type AlertMethod interface {
 	AlertForError(serviceName string, availabilityTarget float64, annotations map[string]string) []rulefmt.Rule
 	AlertForLatency(serviceName string, targets []LatencyTarget, annotations map[string]string) []rulefmt.Rule
 }
 
-var algorithms = map[string]AlertAlgorithm{}
+var methods = map[string]AlertMethod{}
 
-func register(algorithm AlertAlgorithm, name string) AlertAlgorithm {
-	algorithms[name] = algorithm
-	return algorithm
+func register(method AlertMethod, name string) AlertMethod {
+	methods[name] = method
+	return method
 }
 
-func Get(name string) AlertAlgorithm {
-	return algorithms[name]
+func Get(name string) AlertMethod {
+	return methods[name]
 }
 
 type LatencyTarget struct {
