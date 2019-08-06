@@ -13,15 +13,17 @@ import (
 func TestSLOGenerateGroupRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
-		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []methods.LatencyTarget{
-			{
-				LE:     "0.1",
-				Target: 90,
-			},
-			{
-				LE:     "0.5",
-				Target: 99,
+		Objectives: Objectives{
+			Availability: 99.9,
+			Latency: []methods.LatencyTarget{
+				{
+					LE:     "0.1",
+					Target: 90,
+				},
+				{
+					LE:     "0.5",
+					Target: 99,
+				},
 			},
 		},
 		ErrorRateRecord: ExprBlock{
@@ -239,15 +241,17 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 func TestSLOGenerateAlertRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
-		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []methods.LatencyTarget{
-			{
-				LE:     "0.1",
-				Target: 95,
-			},
-			{
-				LE:     "0.5",
-				Target: 99,
+		Objectives: Objectives{
+			Availability: 99.9,
+			Latency: []methods.LatencyTarget{
+				{
+					LE:     "0.1",
+					Target: 95,
+				},
+				{
+					LE:     "0.5",
+					Target: 99,
+				},
 			},
 		},
 		ErrorRateRecord: ExprBlock{

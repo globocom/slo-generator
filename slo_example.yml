@@ -1,7 +1,8 @@
 slos:
   - name: myteam-a.service-a
-    availabilityObjectivePercent: 99
-    latencyObjectiveBuckets:
+    objectives:
+      availability: 99
+      latency:
       - le: 5.0 # 95% < 5s
         target: 95
 
@@ -27,8 +28,9 @@ slos:
 
 
   - name: myteam-b.service-b
-    availabilityObjectivePercent: 99.9
-    latencyObjectiveBuckets:
+    objectives:
+      availability: 99.9
+      latency:
       - le: 0.05 # 90% < 50ms
         target: 90
 

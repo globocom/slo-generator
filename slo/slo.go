@@ -24,12 +24,17 @@ func (block *ExprBlock) ComputeExpr(window, le string) string {
 }
 
 type SLO struct {
-	Name                         string                  `yaml:"name"`
-	AvailabilityObjectivePercent float64                 `yaml:"availabilityObjectivePercent"`
-	LatencyObjectiveBuckets      []methods.LatencyTarget `yaml:"latencyObjectiveBuckets"`
-	ErrorRateRecord              ExprBlock               `yaml:"errorRateRecord"`
-	LatencyRecord                ExprBlock               `yaml:"latencyRecord"`
-	Annotations                  map[string]string       `yaml:"annotations"`
+	Name       string `yaml:"name"`
+	Objectives Objectives
+
+	ErrorRateRecord ExprBlock         `yaml:"errorRateRecord"`
+	LatencyRecord   ExprBlock         `yaml:"latencyRecord"`
+	Annotations     map[string]string `yaml:"annotations"`
+}
+
+type Objectives struct {
+	Availability float64                 `yaml:"availability"`
+	Latency      []methods.LatencyTarget `yaml:"latency"`
 }
 
 func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
@@ -37,13 +42,13 @@ func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
 
 	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
 	if errorMethod != nil {
-		errorRules := errorMethod.AlertForError(slo.Name, slo.AvailabilityObjectivePercent, slo.Annotations)
+		errorRules := errorMethod.AlertForError(slo.Name, slo.Objectives.Availability, slo.Annotations)
 		alertRules = append(alertRules, errorRules...)
 	}
 
 	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
 	if latencyMethod != nil {
-		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.LatencyObjectiveBuckets, slo.Annotations)
+		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.Objectives.Latency, slo.Annotations)
 		alertRules = append(alertRules, latencyRules...)
 	}
 
@@ -75,7 +80,7 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 
 			ruleGroup.Rules = append(ruleGroup.Rules, errorRateRecord)
 
-			for _, latencyBucket := range slo.LatencyObjectiveBuckets {
+			for _, latencyBucket := range slo.Objectives.Latency {
 				latencyRateRecord := rulefmt.Rule{
 					Record: "slo:service_latency:ratio_rate_" + bucket,
 					Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
