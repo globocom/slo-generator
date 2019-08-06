@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	algorithms "github.com/globocom/slo-generator/algorithms"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +14,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []LatencyBucket{
+		LatencyObjectiveBuckets: []algorithms.LatencyTarget{
 			{
 				LE:     "0.1",
 				Target: 90,
@@ -239,10 +240,10 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		AvailabilityObjectivePercent: 99.9,
-		LatencyObjectiveBuckets: []LatencyBucket{
+		LatencyObjectiveBuckets: []algorithms.LatencyTarget{
 			{
 				LE:     "0.1",
-				Target: 90,
+				Target: 95,
 			},
 			{
 				LE:     "0.5",
@@ -265,7 +266,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	}
 
 	alertRules := slo.GenerateAlertRules()
-	assert.Len(t, alertRules, 2)
+	assert.Len(t, alertRules, 4)
 
 	assert.Equal(t, alertRules[0], rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
@@ -279,6 +280,58 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	assert.Equal(t, alertRules[1], rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
+		Labels: map[string]string{
+			"severity": "ticket",
+		},
+		Annotations: slo.Annotations,
+	})
+
+	assert.Equal(t, alertRules[2], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.latency.page",
+		Expr: ("(" +
+			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
+			" and " +
+			"slo:service_latency:ratio_rate_5m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
+			") or (" +
+			"slo:service_latency:ratio_rate_6h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.7" +
+			" and " +
+			"slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.7" +
+			") or (" +
+			"slo:service_latency:ratio_rate_1h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.856" +
+			" and " +
+			"slo:service_latency:ratio_rate_5m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.856" +
+			") or (" +
+			"slo:service_latency:ratio_rate_6h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.94" +
+			" and " +
+			"slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.94" +
+			")"),
+
+		Labels: map[string]string{
+			"severity": "page",
+		},
+		Annotations: slo.Annotations,
+	})
+
+	assert.Equal(t, alertRules[3], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.latency.ticket",
+		Expr: ("(" +
+			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
+			" and " +
+			"slo:service_latency:ratio_rate_2h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
+			") or (" +
+			"slo:service_latency:ratio_rate_3d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.95" +
+			" and " +
+			"slo:service_latency:ratio_rate_6h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.95" +
+			") or (" +
+			"slo:service_latency:ratio_rate_1d{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.97" +
+			" and " +
+			"slo:service_latency:ratio_rate_2h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.97" +
+			") or (" +
+			"slo:service_latency:ratio_rate_3d{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.99" +
+			" and " +
+			"slo:service_latency:ratio_rate_6h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.99" +
+			")"),
+
 		Labels: map[string]string{
 			"severity": "ticket",
 		},

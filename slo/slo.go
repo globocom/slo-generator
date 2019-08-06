@@ -24,17 +24,12 @@ func (block *ExprBlock) ComputeExpr(window, le string) string {
 }
 
 type SLO struct {
-	Name                         string            `yaml:"name"`
-	AvailabilityObjectivePercent float64           `yaml:"availabilityObjectivePercent"`
-	LatencyObjectiveBuckets      []LatencyBucket   `yaml:"latencyObjectiveBuckets"`
-	ErrorRateRecord              ExprBlock         `yaml:"errorRateRecord"`
-	LatencyRecord                ExprBlock         `yaml:"latencyRecord"`
-	Annotations                  map[string]string `yaml:"annotations"`
-}
-
-type LatencyBucket struct {
-	LE     string  `yaml:"le"`
-	Target float64 `yaml:"target"`
+	Name                         string                     `yaml:"name"`
+	AvailabilityObjectivePercent float64                    `yaml:"availabilityObjectivePercent"`
+	LatencyObjectiveBuckets      []algorithms.LatencyTarget `yaml:"latencyObjectiveBuckets"`
+	ErrorRateRecord              ExprBlock                  `yaml:"errorRateRecord"`
+	LatencyRecord                ExprBlock                  `yaml:"latencyRecord"`
+	Annotations                  map[string]string          `yaml:"annotations"`
 }
 
 func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
@@ -48,42 +43,9 @@ func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
 
 	latencyAlgorithm := algorithms.Get(slo.LatencyRecord.AlertAlgorithm)
 	if latencyAlgorithm != nil {
-
+		latencyRules := errorAlgorithm.AlertForLatency(slo.Name, slo.LatencyObjectiveBuckets, slo.Annotations)
+		alertRules = append(alertRules, latencyRules...)
 	}
-	// if slo.Algorithm == "multiwindow" {
-	//	// alerting page
-	//	sloPageRecord := rulefmt.Rule{
-	//		Alert: "slo:" + slo.Name + ".errors.page",
-	//		Expr: algorithms.MultiBurnRateForPage(
-	//			"slo:service_errors_total",
-	//			labels.New(labels.Label{"service", slo.Name}),
-	//			">", (1 - slo.AvailabilityObjectivePercent/100),
-	//		),
-	//		Annotations: slo.Annotations,
-	//		Labels: map[string]string{
-	//			"severity": "page",
-	//		},
-	//	}
-
-	//	alertRules = append(alertRules, sloPageRecord)
-
-	//	// alerting ticket
-	//	sloTicketRecord := rulefmt.Rule{
-	//		Alert: "slo:" + slo.Name + ".errors.ticket",
-	//		Expr: algorithms.MultiBurnRateForTicket(
-	//			"slo:service_errors_total",
-	//			labels.New(labels.Label{"service", slo.Name}),
-	//			">", (1 - slo.AvailabilityObjectivePercent/100),
-	//		),
-	//		Annotations: slo.Annotations,
-	//		Labels: map[string]string{
-	//			"severity": "ticket",
-	//		},
-	//	}
-
-	//	alertRules = append(alertRules, sloTicketRecord)
-
-	// }
 
 	return alertRules
 }

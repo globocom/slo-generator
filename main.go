@@ -45,6 +45,10 @@ func main() {
 
 	for _, slo := range spec.SLOS {
 		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules()...)
+		ruleGroups.Groups = append(ruleGroups.Groups, rulefmt.RuleGroup{
+			Name:  "slo:" + slo.Name + ":alert",
+			Rules: slo.GenerateAlertRules(),
+		})
 	}
 
 	targetFile, err := os.Create(ruleOutput)
