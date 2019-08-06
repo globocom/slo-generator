@@ -1,10 +1,12 @@
 slos:
   - name: myteam-a.service-a
-    algorithm: multiwindow
     availabilityObjectivePercent: 99
     latencyObjectiveBuckets:
-      95: 5s   # 95% < 5s
-      97: 10s  # 97% < 10s
+      - le: 5.0 # 95% < 5s
+        target: 95
+
+      - le: 10.0 # 97% < 10s
+        target: 97
 
     annotations:
       message: Service A Error Budget consumption
@@ -12,22 +14,26 @@ slos:
       slack_channel: '_team_a'
 
     errorRateRecord:
+      algorithm: multi-window
       expr: |
         sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
         sum (rate(http_requests_total{job="service-a"}[$window]))
 
     latencyRecord:
+      algorithm: multi-window
       expr: |
-        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="{{ $latencyBucket }}"}[$window])) /
+        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="$le"}[$window])) /
         sum (rate(http_requests_total{job="service-a"}[$window]))
 
 
   - name: myteam-b.service-b
-    algorithm: multiwindow
     availabilityObjectivePercent: 99.9
     latencyObjectiveBuckets:
-      90: 50ms   # 90% < 50ms
-      95: 100ms  # 95% < 100ms
+      - le: 0.05 # 90% < 50ms
+        target: 90
+
+      - le: 0.10  # 95% < 100ms
+        target: 97
 
     annotations:
       message: Service B Error Budget consumption
@@ -35,11 +41,13 @@ slos:
       slack_channel: '_team_b'
 
     errorRateRecord:
+      algorithm: multi-window
       expr: |
         sum (rate(http_requests_total{job="service-b", status="5xx"}[$window])) /
         sum (rate(http_requests_total{job="service-b"}[$window]))
 
     latencyRecord:
+      algorithm: multi-window
       expr: |
-        sum (rate(http_request_duration_seconds_bucket{job="service-b", le="{{ $latencyBucket }}"}[$window])) /
+        sum (rate(http_request_duration_seconds_bucket{job="service-b", le="$le"}[$window])) /
         sum (rate(http_requests_total{job="service-b"}[$window]))
