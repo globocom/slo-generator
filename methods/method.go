@@ -3,8 +3,8 @@ package methods
 import "github.com/prometheus/prometheus/pkg/rulefmt"
 
 type AlertMethod interface {
-	AlertForError(serviceName string, availabilityTarget float64, annotations map[string]string) []rulefmt.Rule
-	AlertForLatency(serviceName string, targets []LatencyTarget, annotations map[string]string) []rulefmt.Rule
+	AlertForError(serviceName string, availabilityTarget float64) []rulefmt.Rule
+	AlertForLatency(serviceName string, targets []LatencyTarget) []rulefmt.Rule
 }
 
 var methods = map[string]AlertMethod{}

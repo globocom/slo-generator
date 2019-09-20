@@ -262,6 +262,9 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			AlertMethod: "multi-window",
 			Expr:        "kk",
 		},
+		Labels: map[string]string{
+			"channel": "my-channel",
+		},
 		Annotations: map[string]string{
 			"message":   "Service A has lower SLI",
 			"link":      "http://wiki.ops/1234",
@@ -276,6 +279,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
+			"channel":  "my-channel",
 			"severity": "page",
 		},
 		Annotations: slo.Annotations,
@@ -285,6 +289,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
+			"channel":  "my-channel",
 			"severity": "ticket",
 		},
 		Annotations: slo.Annotations,
@@ -311,6 +316,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			")"),
 
 		Labels: map[string]string{
+			"channel":  "my-channel",
 			"severity": "page",
 		},
 		Annotations: slo.Annotations,
@@ -337,6 +343,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			")"),
 
 		Labels: map[string]string{
+			"channel":  "my-channel",
 			"severity": "ticket",
 		},
 		Annotations: slo.Annotations,

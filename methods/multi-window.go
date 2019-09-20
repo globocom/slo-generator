@@ -10,7 +10,7 @@ import (
 
 type MultiWindowAlgorithm struct{}
 
-func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarget float64, annotations map[string]string) []rulefmt.Rule {
+func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarget float64) []rulefmt.Rule {
 	rules := []rulefmt.Rule{
 		{
 			Alert: "slo:" + serviceName + ".errors.page",
@@ -20,7 +20,7 @@ func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarge
 				Value:  (1 - availabilityTarget/100),
 				Kind:   "page",
 			}),
-			Annotations: annotations,
+			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "page",
 			},
@@ -33,7 +33,7 @@ func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarge
 				Value:  (1 - availabilityTarget/100),
 				Kind:   "ticket",
 			}),
-			Annotations: annotations,
+			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "ticket",
 			},
@@ -43,7 +43,7 @@ func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarge
 	return rules
 }
 
-func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []LatencyTarget, annotations map[string]string) []rulefmt.Rule {
+func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []LatencyTarget) []rulefmt.Rule {
 	rules := []rulefmt.Rule{
 		{
 			Alert: "slo:" + serviceName + ".latency.page",
@@ -53,7 +53,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []Laten
 				Buckets: targets,
 				Kind:    "page",
 			}),
-			Annotations: annotations,
+			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "page",
 			},
@@ -66,7 +66,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []Laten
 				Buckets: targets,
 				Kind:    "ticket",
 			}),
-			Annotations: annotations,
+			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "ticket",
 			},

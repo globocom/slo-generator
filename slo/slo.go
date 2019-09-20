@@ -29,6 +29,7 @@ type SLO struct {
 
 	ErrorRateRecord ExprBlock         `yaml:"errorRateRecord"`
 	LatencyRecord   ExprBlock         `yaml:"latencyRecord"`
+	Labels          map[string]string `yaml:"labels"`
 	Annotations     map[string]string `yaml:"annotations"`
 }
 
@@ -42,17 +43,31 @@ func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
 
 	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
 	if errorMethod != nil {
-		errorRules := errorMethod.AlertForError(slo.Name, slo.Objectives.Availability, slo.Annotations)
+		errorRules := errorMethod.AlertForError(slo.Name, slo.Objectives.Availability)
 		alertRules = append(alertRules, errorRules...)
 	}
 
 	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
 	if latencyMethod != nil {
-		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.Objectives.Latency, slo.Annotations)
+		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.Objectives.Latency)
 		alertRules = append(alertRules, latencyRules...)
 	}
 
+	for _, rule := range alertRules {
+		slo.fillMetadata(&rule)
+	}
+
 	return alertRules
+}
+
+func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
+	for label, value := range slo.Labels {
+		rule.Labels[label] = value
+	}
+
+	for label, value := range slo.Annotations {
+		rule.Annotations[label] = value
+	}
 }
 
 func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
