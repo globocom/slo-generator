@@ -27,10 +27,11 @@ type SLO struct {
 	Name       string `yaml:"name"`
 	Objectives Objectives
 
-	ErrorRateRecord ExprBlock         `yaml:"errorRateRecord"`
-	LatencyRecord   ExprBlock         `yaml:"latencyRecord"`
-	Labels          map[string]string `yaml:"labels"`
-	Annotations     map[string]string `yaml:"annotations"`
+	TrafficRateRecord ExprBlock         `yaml:"errorRateRecord"`
+	ErrorRateRecord   ExprBlock         `yaml:"errorRateRecord"`
+	LatencyRecord     ExprBlock         `yaml:"latencyRecord"`
+	Labels            map[string]string `yaml:"labels"`
+	Annotations       map[string]string `yaml:"annotations"`
 }
 
 type Objectives struct {
@@ -85,6 +86,17 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 		}
 
 		for _, bucket := range sample.Buckets {
+			if slo.TrafficRateRecord.Expr != "" {
+				trafficRateRecord := rulefmt.Rule{
+					Record: "slo:service_traffic:ratio_rate_" + bucket,
+					Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
+					Labels: map[string]string{
+						"service": slo.Name,
+					},
+				}
+				ruleGroup.Rules = append(ruleGroup.Rules, trafficRateRecord)
+			}
+
 			errorRateRecord := rulefmt.Rule{
 				Record: "slo:service_errors_total:ratio_rate_" + bucket,
 				Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),

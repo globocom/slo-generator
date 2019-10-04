@@ -26,6 +26,9 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				},
 			},
 		},
+		TrafficRateRecord: ExprBlock{
+			Expr: "sum(rate(http_total[$window]))",
+		},
 		ErrorRateRecord: ExprBlock{
 			AlertMethod: "multi-window",
 			Expr:        "sum(rate(http_errors[$window]))/sum(rate(http_total[$window]))",
@@ -49,6 +52,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 		Interval: model.Duration(time.Second * 30),
 		Rules: []rulefmt.Rule{
 			// 5m
+			{
+				Record: "slo:service_traffic:ratio_rate_5m",
+				Expr:   "sum(rate(http_total[5m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
 			{
 				Record: "slo:service_errors_total:ratio_rate_5m",
 				Expr:   "sum(rate(http_errors[5m]))/sum(rate(http_total[5m]))",
@@ -75,6 +85,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 
 			// 30m
 			{
+				Record: "slo:service_traffic:ratio_rate_30m",
+				Expr:   "sum(rate(http_total[30m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
+			{
 				Record: "slo:service_errors_total:ratio_rate_30m",
 				Expr:   "sum(rate(http_errors[30m]))/sum(rate(http_total[30m]))",
 				Labels: map[string]string{
@@ -99,6 +116,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 			},
 
 			// 1h
+			{
+				Record: "slo:service_traffic:ratio_rate_1h",
+				Expr:   "sum(rate(http_total[1h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
 			{
 				Record: "slo:service_errors_total:ratio_rate_1h",
 				Expr:   "sum(rate(http_errors[1h]))/sum(rate(http_total[1h]))",
@@ -131,6 +155,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 		Rules: []rulefmt.Rule{
 			// 2h
 			{
+				Record: "slo:service_traffic:ratio_rate_2h",
+				Expr:   "sum(rate(http_total[2h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
+			{
 				Record: "slo:service_errors_total:ratio_rate_2h",
 				Expr:   "sum(rate(http_errors[2h]))/sum(rate(http_total[2h]))",
 				Labels: map[string]string{
@@ -155,6 +186,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 			},
 
 			// 6h
+			{
+				Record: "slo:service_traffic:ratio_rate_6h",
+				Expr:   "sum(rate(http_total[6h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
 			{
 				Record: "slo:service_errors_total:ratio_rate_6h",
 				Expr:   "sum(rate(http_errors[6h]))/sum(rate(http_total[6h]))",
@@ -187,6 +225,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 		Rules: []rulefmt.Rule{
 			// 1d
 			{
+				Record: "slo:service_traffic:ratio_rate_1d",
+				Expr:   "sum(rate(http_total[1d]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
+			{
 				Record: "slo:service_errors_total:ratio_rate_1d",
 				Expr:   "sum(rate(http_errors[1d]))/sum(rate(http_total[1d]))",
 				Labels: map[string]string{
@@ -211,6 +256,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 			},
 
 			// 3d
+			{
+				Record: "slo:service_traffic:ratio_rate_3d",
+				Expr:   "sum(rate(http_total[3d]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+				},
+			},
 			{
 				Record: "slo:service_errors_total:ratio_rate_3d",
 				Expr:   "sum(rate(http_errors[3d]))/sum(rate(http_total[3d]))",
