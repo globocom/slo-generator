@@ -27,7 +27,7 @@ type SLO struct {
 	Name       string `yaml:"name"`
 	Objectives Objectives
 
-	TrafficRateRecord ExprBlock         `yaml:"errorRateRecord"`
+	TrafficRateRecord ExprBlock         `yaml:"trafficRateRecord"`
 	ErrorRateRecord   ExprBlock         `yaml:"errorRateRecord"`
 	LatencyRecord     ExprBlock         `yaml:"latencyRecord"`
 	Labels            map[string]string `yaml:"labels"`
