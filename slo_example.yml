@@ -14,6 +14,10 @@ slos:
       link: https://grafana.myservice.com/URL
       slack_channel: '_team_a'
 
+    trafficRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
     errorRateRecord:
       alertMethod: multi-window
       expr: |

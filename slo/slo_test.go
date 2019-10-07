@@ -290,6 +290,123 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	})
 }
 
+func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
+	slo := &SLO{
+		Name:        "auto-discover-services",
+		HonorLabels: true,
+		TrafficRateRecord: ExprBlock{
+			Expr: "sum(rate(http_total[$window])) by (service)",
+		},
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "sum(rate(http_errors[$window])) by (service)/sum(rate(http_total[$window])) by (service)",
+		},
+	}
+
+	groupRules := slo.GenerateGroupRules()
+	assert.Len(t, groupRules, 3)
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:short",
+		Interval: model.Duration(time.Second * 30),
+		Rules: []rulefmt.Rule{
+			// 5m
+			{
+				Record: "slo:service_traffic:ratio_rate_5m",
+				Expr:   "sum(rate(http_total[5m])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_5m",
+				Expr:   "sum(rate(http_errors[5m])) by (service)/sum(rate(http_total[5m])) by (service)",
+				Labels: map[string]string{},
+			},
+			// 30m
+			{
+				Record: "slo:service_traffic:ratio_rate_30m",
+				Expr:   "sum(rate(http_total[30m])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_30m",
+				Expr:   "sum(rate(http_errors[30m])) by (service)/sum(rate(http_total[30m])) by (service)",
+				Labels: map[string]string{},
+			},
+			// 1h
+			{
+				Record: "slo:service_traffic:ratio_rate_1h",
+				Expr:   "sum(rate(http_total[1h])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_1h",
+				Expr:   "sum(rate(http_errors[1h])) by (service)/sum(rate(http_total[1h])) by (service)",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[0])
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:medium",
+		Interval: model.Duration(time.Second * 120),
+		Rules: []rulefmt.Rule{
+			// 2h
+			{
+				Record: "slo:service_traffic:ratio_rate_2h",
+				Expr:   "sum(rate(http_total[2h])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_2h",
+				Expr:   "sum(rate(http_errors[2h])) by (service)/sum(rate(http_total[2h])) by (service)",
+				Labels: map[string]string{},
+			},
+
+			// 6h
+			{
+				Record: "slo:service_traffic:ratio_rate_6h",
+				Expr:   "sum(rate(http_total[6h])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_6h",
+				Expr:   "sum(rate(http_errors[6h])) by (service)/sum(rate(http_total[6h])) by (service)",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[1])
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:daily",
+		Interval: model.Duration(time.Second * 300),
+		Rules: []rulefmt.Rule{
+			// 1d
+			{
+				Record: "slo:service_traffic:ratio_rate_1d",
+				Expr:   "sum(rate(http_total[1d])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_1d",
+				Expr:   "sum(rate(http_errors[1d])) by (service)/sum(rate(http_total[1d])) by (service)",
+				Labels: map[string]string{},
+			},
+
+			// 3d
+			{
+				Record: "slo:service_traffic:ratio_rate_3d",
+				Expr:   "sum(rate(http_total[3d])) by (service)",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_3d",
+				Expr:   "sum(rate(http_errors[3d])) by (service)/sum(rate(http_total[3d])) by (service)",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[2])
+}
+
 func TestSLOGenerateAlertRules(t *testing.T) {
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
