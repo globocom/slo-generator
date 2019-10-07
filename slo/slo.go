@@ -27,6 +27,8 @@ type SLO struct {
 	Name       string `yaml:"name"`
 	Objectives Objectives
 
+	HonorLabels bool `yaml:"honorLabels"`
+
 	TrafficRateRecord ExprBlock         `yaml:"trafficRateRecord"`
 	ErrorRateRecord   ExprBlock         `yaml:"errorRateRecord"`
 	LatencyRecord     ExprBlock         `yaml:"latencyRecord"`
@@ -86,43 +88,54 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 		}
 
 		for _, bucket := range sample.Buckets {
-			if slo.TrafficRateRecord.Expr != "" {
-				trafficRateRecord := rulefmt.Rule{
-					Record: "slo:service_traffic:ratio_rate_" + bucket,
-					Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
-					Labels: map[string]string{
-						"service": slo.Name,
-					},
-				}
-				ruleGroup.Rules = append(ruleGroup.Rules, trafficRateRecord)
-			}
-
-			errorRateRecord := rulefmt.Rule{
-				Record: "slo:service_errors_total:ratio_rate_" + bucket,
-				Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
-				Labels: map[string]string{
-					"service": slo.Name,
-				},
-			}
-
-			ruleGroup.Rules = append(ruleGroup.Rules, errorRateRecord)
-
-			for _, latencyBucket := range slo.Objectives.Latency {
-				latencyRateRecord := rulefmt.Rule{
-					Record: "slo:service_latency:ratio_rate_" + bucket,
-					Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
-					Labels: map[string]string{
-						"service": slo.Name,
-						"le":      latencyBucket.LE,
-					},
-				}
-
-				ruleGroup.Rules = append(ruleGroup.Rules, latencyRateRecord)
-			}
-
+			ruleGroup.Rules = append(ruleGroup.Rules, slo.generateRules(bucket)...)
 		}
 
 		rules = append(rules, ruleGroup)
+	}
+
+	return rules
+}
+
+func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
+	rules := []rulefmt.Rule{}
+	if slo.TrafficRateRecord.Expr != "" {
+		trafficRateRecord := rulefmt.Rule{
+			Record: "slo:service_traffic:ratio_rate_" + bucket,
+			Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
+			Labels: map[string]string{},
+		}
+
+		if !slo.HonorLabels {
+			trafficRateRecord.Labels["service"] = slo.Name
+		}
+
+		rules = append(rules, trafficRateRecord)
+	}
+
+	errorRateRecord := rulefmt.Rule{
+		Record: "slo:service_errors_total:ratio_rate_" + bucket,
+		Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
+		Labels: map[string]string{},
+	}
+
+	if !slo.HonorLabels {
+		errorRateRecord.Labels["service"] = slo.Name
+	}
+
+	rules = append(rules, errorRateRecord)
+
+	for _, latencyBucket := range slo.Objectives.Latency {
+		latencyRateRecord := rulefmt.Rule{
+			Record: "slo:service_latency:ratio_rate_" + bucket,
+			Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
+			Labels: map[string]string{
+				"service": slo.Name,
+				"le":      latencyBucket.LE,
+			},
+		}
+
+		rules = append(rules, latencyRateRecord)
 	}
 
 	return rules
