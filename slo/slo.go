@@ -1,6 +1,7 @@
 package slo
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -8,6 +9,24 @@ import (
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
+
+var quantiles = []struct {
+	name     string
+	quantile float64
+}{
+	{
+		name:     "p50",
+		quantile: 0.5,
+	},
+	{
+		name:     "p95",
+		quantile: 0.95,
+	},
+	{
+		name:     "p99",
+		quantile: 0.99,
+	},
+}
 
 type SLOSpec struct {
 	SLOS []SLO
@@ -23,17 +42,23 @@ func (block *ExprBlock) ComputeExpr(window, le string) string {
 	return replacer.Replace(block.Expr)
 }
 
+func (block *ExprBlock) ComputeQuantile(window string, quantile float64) string {
+	replacer := strings.NewReplacer("$window", window, "$quantile", fmt.Sprintf("%g", quantile))
+	return replacer.Replace(block.Expr)
+}
+
 type SLO struct {
 	Name       string `yaml:"name"`
 	Objectives Objectives
 
 	HonorLabels bool `yaml:"honorLabels"`
 
-	TrafficRateRecord ExprBlock         `yaml:"trafficRateRecord"`
-	ErrorRateRecord   ExprBlock         `yaml:"errorRateRecord"`
-	LatencyRecord     ExprBlock         `yaml:"latencyRecord"`
-	Labels            map[string]string `yaml:"labels"`
-	Annotations       map[string]string `yaml:"annotations"`
+	TrafficRateRecord     ExprBlock         `yaml:"trafficRateRecord"`
+	ErrorRateRecord       ExprBlock         `yaml:"errorRateRecord"`
+	LatencyRecord         ExprBlock         `yaml:"latencyRecord"`
+	LatencyQuantileRecord ExprBlock         `yaml:"latencyQuantileRecord"`
+	Labels                map[string]string `yaml:"labels"`
+	Annotations           map[string]string `yaml:"annotations"`
 }
 
 type Objectives struct {
@@ -113,17 +138,35 @@ func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 		rules = append(rules, trafficRateRecord)
 	}
 
-	errorRateRecord := rulefmt.Rule{
-		Record: "slo:service_errors_total:ratio_rate_" + bucket,
-		Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
-		Labels: map[string]string{},
+	if slo.ErrorRateRecord.Expr != "" {
+		errorRateRecord := rulefmt.Rule{
+			Record: "slo:service_errors_total:ratio_rate_" + bucket,
+			Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
+			Labels: map[string]string{},
+		}
+
+		if !slo.HonorLabels {
+			errorRateRecord.Labels["service"] = slo.Name
+		}
+
+		rules = append(rules, errorRateRecord)
 	}
 
-	if !slo.HonorLabels {
-		errorRateRecord.Labels["service"] = slo.Name
-	}
+	if slo.LatencyQuantileRecord.Expr != "" {
+		for _, quantile := range quantiles {
+			latencyQuantileRecord := rulefmt.Rule{
+				Record: "slo:service_latency:" + quantile.name + "_" + bucket,
+				Expr:   slo.LatencyQuantileRecord.ComputeQuantile(bucket, quantile.quantile),
+				Labels: map[string]string{},
+			}
 
-	rules = append(rules, errorRateRecord)
+			if !slo.HonorLabels {
+				latencyQuantileRecord.Labels["service"] = slo.Name
+			}
+
+			rules = append(rules, latencyQuantileRecord)
+		}
+	}
 
 	for _, latencyBucket := range slo.Objectives.Latency {
 		latencyRateRecord := rulefmt.Rule{

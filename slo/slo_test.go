@@ -290,6 +290,153 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	})
 }
 
+func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
+	slo := &SLO{
+		Name:        "auto-discover-services",
+		HonorLabels: true,
+		LatencyQuantileRecord: ExprBlock{
+			Expr: "histogram_quantile($quantile, sum by (le) (rate(http_total[$window])))",
+		},
+	}
+
+	groupRules := slo.GenerateGroupRules()
+	assert.Len(t, groupRules, 3)
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:short",
+		Interval: model.Duration(time.Second * 30),
+		Rules: []rulefmt.Rule{
+			// 5m
+			{
+				Record: "slo:service_latency:p50_5m",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[5m])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_5m",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[5m])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_5m",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[5m])))",
+				Labels: map[string]string{},
+			},
+			// 30m
+			{
+				Record: "slo:service_latency:p50_30m",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[30m])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_30m",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[30m])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_30m",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[30m])))",
+				Labels: map[string]string{},
+			},
+			// 1h
+			{
+				Record: "slo:service_latency:p50_1h",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[1h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_1h",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[1h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_1h",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[1h])))",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[0])
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:medium",
+		Interval: model.Duration(time.Second * 120),
+		Rules: []rulefmt.Rule{
+			// 2h
+			{
+				Record: "slo:service_latency:p50_2h",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[2h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_2h",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[2h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_2h",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[2h])))",
+				Labels: map[string]string{},
+			},
+			// 6h
+			{
+				Record: "slo:service_latency:p50_6h",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[6h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_6h",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[6h])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_6h",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[6h])))",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[1])
+
+	assert.Equal(t, rulefmt.RuleGroup{
+		Name:     "slo:auto-discover-services:daily",
+		Interval: model.Duration(time.Second * 300),
+		Rules: []rulefmt.Rule{
+			// 1d
+			{
+				Record: "slo:service_latency:p50_1d",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[1d])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_1d",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[1d])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_1d",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[1d])))",
+				Labels: map[string]string{},
+			},
+
+			// 3d
+			{
+				Record: "slo:service_latency:p50_3d",
+				Expr:   "histogram_quantile(0.5, sum by (le) (rate(http_total[3d])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p95_3d",
+				Expr:   "histogram_quantile(0.95, sum by (le) (rate(http_total[3d])))",
+				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:p99_3d",
+				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[3d])))",
+				Labels: map[string]string{},
+			},
+		},
+	}, groupRules[2])
+}
+
 func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 	slo := &SLO{
 		Name:        "auto-discover-services",
