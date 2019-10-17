@@ -122,17 +122,24 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 	return rules
 }
 
+func (slo SLO) labels() map[string]string {
+	labels := map[string]string{}
+	if !slo.HonorLabels {
+		labels["service"] = slo.Name
+	}
+	for key, value := range slo.Labels {
+		labels[key] = value
+	}
+	return labels
+}
+
 func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 	rules := []rulefmt.Rule{}
 	if slo.TrafficRateRecord.Expr != "" {
 		trafficRateRecord := rulefmt.Rule{
 			Record: "slo:service_traffic:ratio_rate_" + bucket,
 			Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
-			Labels: map[string]string{},
-		}
-
-		if !slo.HonorLabels {
-			trafficRateRecord.Labels["service"] = slo.Name
+			Labels: slo.labels(),
 		}
 
 		rules = append(rules, trafficRateRecord)
@@ -142,11 +149,7 @@ func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 		errorRateRecord := rulefmt.Rule{
 			Record: "slo:service_errors_total:ratio_rate_" + bucket,
 			Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
-			Labels: map[string]string{},
-		}
-
-		if !slo.HonorLabels {
-			errorRateRecord.Labels["service"] = slo.Name
+			Labels: slo.labels(),
 		}
 
 		rules = append(rules, errorRateRecord)
@@ -157,11 +160,7 @@ func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 			latencyQuantileRecord := rulefmt.Rule{
 				Record: "slo:service_latency:" + quantile.name + "_" + bucket,
 				Expr:   slo.LatencyQuantileRecord.ComputeQuantile(bucket, quantile.quantile),
-				Labels: map[string]string{},
-			}
-
-			if !slo.HonorLabels {
-				latencyQuantileRecord.Labels["service"] = slo.Name
+				Labels: slo.labels(),
 			}
 
 			rules = append(rules, latencyQuantileRecord)
@@ -172,11 +171,10 @@ func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 		latencyRateRecord := rulefmt.Rule{
 			Record: "slo:service_latency:ratio_rate_" + bucket,
 			Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
-			Labels: map[string]string{
-				"service": slo.Name,
-				"le":      latencyBucket.LE,
-			},
+			Labels: slo.labels(),
 		}
+
+		latencyRateRecord.Labels["le"] = latencyBucket.LE
 
 		rules = append(rules, latencyRateRecord)
 	}

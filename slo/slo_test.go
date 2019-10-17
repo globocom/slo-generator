@@ -37,6 +37,9 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 			AlertMethod: "multi-window",
 			Expr:        "sum(rate(http_bucket{le=\"$le\"}[$window]))/sum(rate(http_total[$window]))",
 		},
+		Labels: map[string]string{
+			"team": "team-avengers",
+		},
 		Annotations: map[string]string{
 			"message":   "Service A has lower SLI",
 			"link":      "http://wiki.ops/1234",
@@ -57,6 +60,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[5m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -64,6 +68,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[5m]))/sum(rate(http_total[5m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -71,6 +76,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[5m]))/sum(rate(http_total[5m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.1",
 				},
 			},
@@ -79,6 +85,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[5m]))/sum(rate(http_total[5m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.5",
 				},
 			},
@@ -89,6 +96,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[30m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -96,6 +104,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[30m]))/sum(rate(http_total[30m]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -104,6 +113,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.1",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -112,6 +122,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.5",
+					"team":    "team-avengers",
 				},
 			},
 
@@ -121,6 +132,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[1h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -128,6 +140,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[1h]))/sum(rate(http_total[1h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -135,6 +148,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[1h]))/sum(rate(http_total[1h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.1",
 				},
 			},
@@ -144,6 +158,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.5",
+					"team":    "team-avengers",
 				},
 			},
 		},
@@ -159,6 +174,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[2h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -166,6 +182,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[2h]))/sum(rate(http_total[2h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -174,6 +191,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.1",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -182,6 +200,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.5",
+					"team":    "team-avengers",
 				},
 			},
 
@@ -191,6 +210,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[6h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -198,6 +218,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[6h]))/sum(rate(http_total[6h]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -206,12 +227,14 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"le":      "0.1",
+					"team":    "team-avengers",
 				},
 			},
 			{
 				Record: "slo:service_latency:ratio_rate_6h",
 				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[6h]))/sum(rate(http_total[6h]))",
 				Labels: map[string]string{
+					"team":    "team-avengers",
 					"service": "my-team.my-service.payment",
 					"le":      "0.5",
 				},
@@ -229,6 +252,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[1d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -236,6 +260,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[1d]))/sum(rate(http_total[1d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -243,6 +268,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[1d]))/sum(rate(http_total[1d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.1",
 				},
 			},
@@ -251,6 +277,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[1d]))/sum(rate(http_total[1d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.5",
 				},
 			},
@@ -261,6 +288,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_total[3d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -268,6 +296,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_errors[3d]))/sum(rate(http_total[3d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 				},
 			},
 			{
@@ -275,6 +304,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[3d]))/sum(rate(http_total[3d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.1",
 				},
 			},
@@ -283,6 +313,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[3d]))/sum(rate(http_total[3d]))",
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
 					"le":      "0.5",
 				},
 			},
