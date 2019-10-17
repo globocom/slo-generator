@@ -116,7 +116,9 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 			ruleGroup.Rules = append(ruleGroup.Rules, slo.generateRules(bucket)...)
 		}
 
-		rules = append(rules, ruleGroup)
+		if len(ruleGroup.Rules) > 0 {
+			rules = append(rules, ruleGroup)
+		}
 	}
 
 	return rules
@@ -167,16 +169,18 @@ func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
 		}
 	}
 
-	for _, latencyBucket := range slo.Objectives.Latency {
-		latencyRateRecord := rulefmt.Rule{
-			Record: "slo:service_latency:ratio_rate_" + bucket,
-			Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
-			Labels: slo.labels(),
+	if slo.LatencyRecord.Expr != "" {
+		for _, latencyBucket := range slo.Objectives.Latency {
+			latencyRateRecord := rulefmt.Rule{
+				Record: "slo:service_latency:ratio_rate_" + bucket,
+				Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
+				Labels: slo.labels(),
+			}
+
+			latencyRateRecord.Labels["le"] = latencyBucket.LE
+
+			rules = append(rules, latencyRateRecord)
 		}
-
-		latencyRateRecord.Labels["le"] = latencyBucket.LE
-
-		rules = append(rules, latencyRateRecord)
 	}
 
 	return rules
