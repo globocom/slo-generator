@@ -66,7 +66,7 @@ type Objectives struct {
 	Latency      []methods.LatencyTarget `yaml:"latency"`
 }
 
-func (slo SLO) GenerateAlertRules() []rulefmt.Rule {
+func (slo *SLO) GenerateAlertRules() []rulefmt.Rule {
 	alertRules := []rulefmt.Rule{}
 
 	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
@@ -98,7 +98,7 @@ func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
 	}
 }
 
-func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
+func (slo *SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 	rules := []rulefmt.RuleGroup{}
 
 	for _, sample := range defaultSamples {
@@ -124,7 +124,7 @@ func (slo SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 	return rules
 }
 
-func (slo SLO) labels() map[string]string {
+func (slo *SLO) labels() map[string]string {
 	labels := map[string]string{}
 	if !slo.HonorLabels {
 		labels["service"] = slo.Name
@@ -135,7 +135,7 @@ func (slo SLO) labels() map[string]string {
 	return labels
 }
 
-func (slo SLO) generateRules(bucket string) []rulefmt.Rule {
+func (slo *SLO) generateRules(bucket string) []rulefmt.Rule {
 	rules := []rulefmt.Rule{}
 	if slo.TrafficRateRecord.Expr != "" {
 		trafficRateRecord := rulefmt.Rule{
