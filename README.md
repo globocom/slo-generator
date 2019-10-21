@@ -18,3 +18,12 @@ Lookup [slo_example.yml](./slo_example.yml) to parametize SLO and generate prome
 ```
 slo-generator -slo.path=slo_example.yml -rule.output rule.yml
 ```
+
+# Grafana integration
+
+All generated SLOs are visible by grafana
+
+![Overview](https://github.com/globocom/slo-generator/raw/master/grafana-screenshots/slo-overview.png)
+![Long Term](https://github.com/globocom/slo-generator/raw/master/grafana-screenshots/slo-long-term.png)
+
+Import dashboard using following [JSON files](./grafana-dashboards)
