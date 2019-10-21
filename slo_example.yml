@@ -8,11 +8,12 @@ slos:
 
       - le: 10.0 # 97% < 10s
         target: 97
-
+    labels:
+      slack_channel: '_team_a'
+      platform: myplatform
     annotations:
       message: Service A Error Budget consumption
       link: https://grafana.myservice.com/URL
-      slack_channel: '_team_a'
 
     trafficRateRecord:
       expr: |
@@ -41,11 +42,12 @@ slos:
       - le: 0.10  # 95% < 100ms
         target: 97
 
+    labels:
+      slack_channel: '_team_b'
+      platform: myplatform
     annotations:
       message: Service B Error Budget consumption
       link:
-      slack_channel: '_team_b'
-
     errorRateRecord:
       alertMethod: multi-window
       expr: |
