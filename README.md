@@ -1,5 +1,5 @@
 # slo-generator
-Easily setup a service level objective using prometheus, based on lessons of book: https://landing.google.com/sre/workbook/chapters/alerting-on-slos/.
+Easily setup a service level objective using prometheus, based on lessons from the book linked below: https://landing.google.com/sre/workbook/chapters/alerting-on-slos/.
 
 
 # Alert methods currently supported
@@ -21,7 +21,7 @@ slo-generator -slo.path=slo_example.yml -rule.output rule.yml
 
 # Grafana integration
 
-All generated SLOs are visible by grafana
+All generated SLOs are visible by grafana:
 
 ![Overview](https://github.com/globocom/slo-generator/raw/master/grafana-screenshots/slo-overview.png)
 ![Long Term](https://github.com/globocom/slo-generator/raw/master/grafana-screenshots/slo-long-term.png)
