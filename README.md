@@ -1,5 +1,5 @@
 # slo-generator
-Easily setup a service level objective using prometheus, based on lessons from the [book](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/).
+Easily setup a service level objective using prometheus, based on lessons from the [SRE workbook](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/).
 
 
 # Alert methods currently supported
