@@ -13,7 +13,7 @@ Easily setup a service level objective using prometheus, based on lessons from t
 
 # Generating
 
-Lookup [slo_example.yml](./examples/slo_example.yml) to parametize SLO and generate prometheus rules running
+Look the file [slo_example.yml](./examples/slo_example.yml) to see how to parametrize SLOs and generate Prometheus rules by running the following command:
 
 ```
 slo-generator -slo.path=slo_example.yml -rule.output rule.yml
@@ -23,9 +23,9 @@ slo-generator -slo.path=slo_example.yml -rule.output rule.yml
 
 The Workbook suggests to create classes to simplify how to set a SLO for your services, read details about concepts [here](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/#alerting_at_scale)
 
-Lookup [slo_example_with_classes.yml](./examples/slo_example_with_classes.yml) and [slo_classes.yml](./examples/slo_classes.yml) to see how to define classes and associate with your services.
+Look at [slo_example_with_classes.yml](./examples/slo_example_with_classes.yml) and [slo_classes.yml](./examples/slo_classes.yml) to see how to define classes and associate with your services.
 
-After that, you can run command specifing the classes file like this:
+After that, you can run the command specifying the classes:
 
 ```
 slo-generator -slo.path=slo_example_with_classes.yml -classes.path slo_classes.yml -rule.output rule.yml

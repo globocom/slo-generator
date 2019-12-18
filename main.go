@@ -51,7 +51,7 @@ func main() {
 	}
 
 	for _, slo := range spec.SLOS {
-		// try to use any slo class weather found
+		// try to use any slo class found
 		sloClass, err := classesDefinition.FindClass(slo.Class)
 		if err != nil {
 			log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
