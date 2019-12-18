@@ -49,6 +49,7 @@ func (block *ExprBlock) ComputeQuantile(window string, quantile float64) string 
 
 type SLO struct {
 	Name       string `yaml:"name"`
+	Class      string `yaml:"class"`
 	Objectives Objectives
 
 	HonorLabels bool `yaml:"honorLabels"`
@@ -66,18 +67,33 @@ type Objectives struct {
 	Latency      []methods.LatencyTarget `yaml:"latency"`
 }
 
-func (slo *SLO) GenerateAlertRules() []rulefmt.Rule {
+func (o *Objectives) LatencyBuckets() []string {
+	latencyBuckets := []string{}
+
+	for _, latencyBucket := range o.Latency {
+		latencyBuckets = append(latencyBuckets, latencyBucket.LE)
+	}
+
+	return latencyBuckets
+}
+
+func (slo *SLO) GenerateAlertRules(sloClass *Class) []rulefmt.Rule {
+	objectives := slo.Objectives
+	if sloClass != nil {
+		objectives = sloClass.Objectives
+	}
+
 	alertRules := []rulefmt.Rule{}
 
 	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
 	if errorMethod != nil {
-		errorRules := errorMethod.AlertForError(slo.Name, slo.Objectives.Availability)
+		errorRules := errorMethod.AlertForError(slo.Name, objectives.Availability)
 		alertRules = append(alertRules, errorRules...)
 	}
 
 	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
 	if latencyMethod != nil {
-		latencyRules := latencyMethod.AlertForLatency(slo.Name, slo.Objectives.Latency)
+		latencyRules := latencyMethod.AlertForLatency(slo.Name, objectives.Latency)
 		alertRules = append(alertRules, latencyRules...)
 	}
 
@@ -98,8 +114,14 @@ func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
 	}
 }
 
-func (slo *SLO) GenerateGroupRules() []rulefmt.RuleGroup {
+func (slo *SLO) GenerateGroupRules(sloClass *Class) []rulefmt.RuleGroup {
 	rules := []rulefmt.RuleGroup{}
+
+	objectives := slo.Objectives
+	if sloClass != nil {
+		objectives = sloClass.Objectives
+	}
+	latencyBuckets := objectives.LatencyBuckets()
 
 	for _, sample := range defaultSamples {
 		interval, err := model.ParseDuration(sample.Interval)
@@ -113,7 +135,7 @@ func (slo *SLO) GenerateGroupRules() []rulefmt.RuleGroup {
 		}
 
 		for _, bucket := range sample.Buckets {
-			ruleGroup.Rules = append(ruleGroup.Rules, slo.generateRules(bucket)...)
+			ruleGroup.Rules = append(ruleGroup.Rules, slo.generateRules(bucket, latencyBuckets)...)
 		}
 
 		if len(ruleGroup.Rules) > 0 {
@@ -135,7 +157,7 @@ func (slo *SLO) labels() map[string]string {
 	return labels
 }
 
-func (slo *SLO) generateRules(bucket string) []rulefmt.Rule {
+func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.Rule {
 	rules := []rulefmt.Rule{}
 	if slo.TrafficRateRecord.Expr != "" {
 		trafficRateRecord := rulefmt.Rule{
@@ -170,14 +192,14 @@ func (slo *SLO) generateRules(bucket string) []rulefmt.Rule {
 	}
 
 	if slo.LatencyRecord.Expr != "" {
-		for _, latencyBucket := range slo.Objectives.Latency {
+		for _, latencyBucket := range latencyBuckets {
 			latencyRateRecord := rulefmt.Rule{
 				Record: "slo:service_latency:ratio_rate_" + bucket,
-				Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket.LE),
+				Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket),
 				Labels: slo.labels(),
 			}
 
-			latencyRateRecord.Labels["le"] = latencyBucket.LE
+			latencyRateRecord.Labels["le"] = latencyBucket
 
 			rules = append(rules, latencyRateRecord)
 		}

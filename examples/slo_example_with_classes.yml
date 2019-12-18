@@ -1,0 +1,46 @@
+slos:
+  - name: myteam-a.service-a
+    class: CRITICAL
+    labels:
+      slack_channel: '_team_a'
+      platform: myplatform
+    annotations:
+      message: Service A Error Budget consumption
+      link: https://grafana.myservice.com/URL
+
+    trafficRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+    errorRateRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+    latencyRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="$le"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+
+  - name: myteam-b.service-b
+    class: HIGH_FAST
+    labels:
+      slack_channel: '_team_b'
+      platform: myplatform
+    annotations:
+      message: Service B Error Budget consumption
+      link:
+    errorRateRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_requests_total{job="service-b", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
+
+    latencyRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-b", le="$le"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
