@@ -21,11 +21,11 @@ slo-generator -slo.path=slo_example.yml -rule.output rule.yml
 
 # SLOs at scale
 
-The Workbook sugests to create classes to simplify how to set a SLO for your microservices, read details about concepts [here](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/#alerting_at_scale)
+The Workbook suggests to create classes to simplify how to set a SLO for your services, read details about concepts [here](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/#alerting_at_scale)
 
 Lookup [slo_example_with_classes.yml](./examples/slo_example_with_classes.yml) and [slo_classes.yml](./examples/slo_classes.yml) to see how to define classes and associate with your services.
 
-After that can run command specifing the classes file.
+After that, you can run command specifing the classes file like this:
 
 ```
 slo-generator -slo.path=slo_example_with_classes.yml -classes.path slo_classes.yml -rule.output rule.yml

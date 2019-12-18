@@ -52,7 +52,10 @@ func main() {
 
 	for _, slo := range spec.SLOS {
 		// try to use any slo class weather found
-		sloClass := classesDefinition.FindClass(slo.Class)
+		sloClass, err := classesDefinition.FindClass(slo.Class)
+		if err != nil {
+			log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
+		}
 
 		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules(sloClass)...)
 		ruleGroups.Groups = append(ruleGroups.Groups, rulefmt.RuleGroup{
@@ -73,6 +76,7 @@ func main() {
 	log.Printf("generated a SLO record in %q", ruleOutput)
 }
 
+// readClassesDefinition read SLO classes from filesystem
 func readClassesDefinition(classesPath string) (*slo.ClassesDefinition, error) {
 	classesDefinition := slo.ClassesDefinition{
 		Classes: []slo.Class{},

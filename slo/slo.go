@@ -67,6 +67,8 @@ type Objectives struct {
 	Latency      []methods.LatencyTarget `yaml:"latency"`
 }
 
+// LatencyBuckets returns all boundaries of latencies
+// is the same boundaries of a prometheus histogram (aka: le) used to calculate latency SLOs
 func (o *Objectives) LatencyBuckets() []string {
 	latencyBuckets := []string{}
 
