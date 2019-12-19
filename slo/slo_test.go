@@ -479,6 +479,13 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 			AlertMethod: "multi-window",
 			Expr:        "sum(rate(http_errors[$window])) by (service)/sum(rate(http_total[$window])) by (service)",
 		},
+		LatencyRecord: ExprBlock{
+			Buckets: []string{
+				"0.1",
+				"1.0",
+			},
+			Expr: "sum(bucket{le=\"$le\"}[$window])/sum(bucket{le=\"+Inf\"}[$window])",
+		},
 	}
 
 	groupRules := slo.GenerateGroupRules(nil)
@@ -499,6 +506,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(rate(http_errors[5m])) by (service)/sum(rate(http_total[5m])) by (service)",
 				Labels: map[string]string{},
 			},
+			{
+				Record: "slo:service_latency:ratio_rate_5m",
+				Expr:   "sum(bucket{le=\"0.1\"}[5m])/sum(bucket{le=\"+Inf\"}[5m])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_5m",
+				Expr:   "sum(bucket{le=\"1.0\"}[5m])/sum(bucket{le=\"+Inf\"}[5m])",
+				Labels: map[string]string{"le": "1.0"},
+			},
 			// 30m
 			{
 				Record: "slo:service_traffic:ratio_rate_30m",
@@ -510,6 +527,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(rate(http_errors[30m])) by (service)/sum(rate(http_total[30m])) by (service)",
 				Labels: map[string]string{},
 			},
+			{
+				Record: "slo:service_latency:ratio_rate_30m",
+				Expr:   "sum(bucket{le=\"0.1\"}[30m])/sum(bucket{le=\"+Inf\"}[30m])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_30m",
+				Expr:   "sum(bucket{le=\"1.0\"}[30m])/sum(bucket{le=\"+Inf\"}[30m])",
+				Labels: map[string]string{"le": "1.0"},
+			},
 			// 1h
 			{
 				Record: "slo:service_traffic:ratio_rate_1h",
@@ -520,6 +547,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Record: "slo:service_errors_total:ratio_rate_1h",
 				Expr:   "sum(rate(http_errors[1h])) by (service)/sum(rate(http_total[1h])) by (service)",
 				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_1h",
+				Expr:   "sum(bucket{le=\"0.1\"}[1h])/sum(bucket{le=\"+Inf\"}[1h])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_1h",
+				Expr:   "sum(bucket{le=\"1.0\"}[1h])/sum(bucket{le=\"+Inf\"}[1h])",
+				Labels: map[string]string{"le": "1.0"},
 			},
 		},
 	}, groupRules[0])
@@ -539,6 +576,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(rate(http_errors[2h])) by (service)/sum(rate(http_total[2h])) by (service)",
 				Labels: map[string]string{},
 			},
+			{
+				Record: "slo:service_latency:ratio_rate_2h",
+				Expr:   "sum(bucket{le=\"0.1\"}[2h])/sum(bucket{le=\"+Inf\"}[2h])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_2h",
+				Expr:   "sum(bucket{le=\"1.0\"}[2h])/sum(bucket{le=\"+Inf\"}[2h])",
+				Labels: map[string]string{"le": "1.0"},
+			},
 
 			// 6h
 			{
@@ -550,6 +597,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Record: "slo:service_errors_total:ratio_rate_6h",
 				Expr:   "sum(rate(http_errors[6h])) by (service)/sum(rate(http_total[6h])) by (service)",
 				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_6h",
+				Expr:   "sum(bucket{le=\"0.1\"}[6h])/sum(bucket{le=\"+Inf\"}[6h])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_6h",
+				Expr:   "sum(bucket{le=\"1.0\"}[6h])/sum(bucket{le=\"+Inf\"}[6h])",
+				Labels: map[string]string{"le": "1.0"},
 			},
 		},
 	}, groupRules[1])
@@ -570,6 +627,17 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Labels: map[string]string{},
 			},
 
+			{
+				Record: "slo:service_latency:ratio_rate_1d",
+				Expr:   "sum(bucket{le=\"0.1\"}[1d])/sum(bucket{le=\"+Inf\"}[1d])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_1d",
+				Expr:   "sum(bucket{le=\"1.0\"}[1d])/sum(bucket{le=\"+Inf\"}[1d])",
+				Labels: map[string]string{"le": "1.0"},
+			},
+
 			// 3d
 			{
 				Record: "slo:service_traffic:ratio_rate_3d",
@@ -580,6 +648,16 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Record: "slo:service_errors_total:ratio_rate_3d",
 				Expr:   "sum(rate(http_errors[3d])) by (service)/sum(rate(http_total[3d])) by (service)",
 				Labels: map[string]string{},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_3d",
+				Expr:   "sum(bucket{le=\"0.1\"}[3d])/sum(bucket{le=\"+Inf\"}[3d])",
+				Labels: map[string]string{"le": "0.1"},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_3d",
+				Expr:   "sum(bucket{le=\"1.0\"}[3d])/sum(bucket{le=\"+Inf\"}[3d])",
+				Labels: map[string]string{"le": "1.0"},
 			},
 		},
 	}, groupRules[2])

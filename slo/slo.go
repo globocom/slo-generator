@@ -33,8 +33,9 @@ type SLOSpec struct {
 }
 
 type ExprBlock struct {
-	AlertMethod string `yaml:"alertMethod"`
-	Expr        string `yaml:"expr"`
+	AlertMethod string   `yaml:"alertMethod"`
+	Buckets     []string `yaml:"buckets"` // used to define buckets of histogram when using latency expression
+	Expr        string   `yaml:"expr"`
 }
 
 func (block *ExprBlock) ComputeExpr(window, le string) string {
@@ -124,6 +125,9 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class) []rulefmt.RuleGroup {
 		objectives = sloClass.Objectives
 	}
 	latencyBuckets := objectives.LatencyBuckets()
+	if len(slo.LatencyRecord.Buckets) > 0 {
+		latencyBuckets = slo.LatencyRecord.Buckets
+	}
 
 	for _, sample := range defaultSamples {
 		interval, err := model.ParseDuration(sample.Interval)
