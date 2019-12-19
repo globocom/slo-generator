@@ -12,10 +12,12 @@ import (
 
 func main() {
 	var (
-		sloPath    = ""
-		ruleOutput = ""
+		sloPath     = ""
+		classesPath = ""
+		ruleOutput  = ""
 	)
 	flag.StringVar(&sloPath, "slo.path", "", "A YML file describing SLOs")
+	flag.StringVar(&classesPath, "classes.path", "", "A YML file describing SLOs classes (optional)")
 	flag.StringVar(&ruleOutput, "rule.output", "", "Output to describe a prometheus rules")
 
 	flag.Parse()
@@ -39,15 +41,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	classesDefinition, err := readClassesDefinition(classesPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ruleGroups := &rulefmt.RuleGroups{
 		Groups: []rulefmt.RuleGroup{},
 	}
 
 	for _, slo := range spec.SLOS {
-		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules()...)
+		// try to use any slo class found
+		sloClass, err := classesDefinition.FindClass(slo.Class)
+		if err != nil {
+			log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
+		}
+
+		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules(sloClass)...)
 		ruleGroups.Groups = append(ruleGroups.Groups, rulefmt.RuleGroup{
 			Name:  "slo:" + slo.Name + ":alert",
-			Rules: slo.GenerateAlertRules(),
+			Rules: slo.GenerateAlertRules(sloClass),
 		})
 	}
 
@@ -61,4 +74,23 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("generated a SLO record in %q", ruleOutput)
+}
+
+// readClassesDefinition read SLO classes from filesystem
+func readClassesDefinition(classesPath string) (*slo.ClassesDefinition, error) {
+	classesDefinition := slo.ClassesDefinition{
+		Classes: []slo.Class{},
+	}
+	if classesPath != "" {
+		f, err := os.Open(classesPath)
+		if err != nil {
+			return nil, err
+		}
+		err = yaml.NewDecoder(f).Decode(&classesDefinition)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &classesDefinition, nil
 }

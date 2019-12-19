@@ -1,0 +1,34 @@
+classes:
+  - name: CRITICAL
+    objectives:
+      availability: 99.99
+      latency:
+      - le: 0.1 # 95% < 100ms
+        target: 95
+
+      - le: 0.2 # 99% < 200ms
+        target: 99
+
+  - name: HIGH_FAST
+    objectives:
+      availability: 99.9
+      latency:
+      - le: 0.1 # 95% < 100ms
+        target: 95
+
+      - le: 0.2 # 99% < 200ms
+        target: 99
+
+  - name: HIGH_SLOW
+    objectives:
+      availability: 99.9
+      latency:
+      - le: 1.0 # 95% < 1s
+        target: 95
+
+      - le: 5.0 # 99% < 5s
+        target: 99
+
+  - name: LOW
+    objectives:
+      availability: 99
