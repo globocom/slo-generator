@@ -95,7 +95,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class) []rulefmt.Rule {
 	}
 
 	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
-	if latencyMethod != nil {
+	if latencyMethod != nil && objectives.Latency != nil {
 		latencyRules := latencyMethod.AlertForLatency(slo.Name, objectives.Latency)
 		alertRules = append(alertRules, latencyRules...)
 	}

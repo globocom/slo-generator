@@ -902,6 +902,12 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 			},
 		},
 	}
+	noLatencyClass := &Class{
+		Name: "LOW",
+		Objectives: Objectives{
+			Availability: 99,
+		},
+	}
 	slo := &SLO{
 		Name:  "my-team.my-service.payment",
 		Class: "HIGH",
@@ -997,4 +1003,7 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 		},
 		Annotations: slo.Annotations,
 	})
+
+	alertRules = slo.GenerateAlertRules(noLatencyClass)
+	assert.Len(t, alertRules, 2)
 }
