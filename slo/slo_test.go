@@ -47,7 +47,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 		},
 	}
 
-	groupRules := slo.GenerateGroupRules(nil)
+	groupRules := slo.GenerateGroupRules(nil, false)
 	assert.Len(t, groupRules, 3)
 
 	assert.Equal(t, groupRules[0], rulefmt.RuleGroup{
@@ -330,7 +330,7 @@ func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
 		},
 	}
 
-	groupRules := slo.GenerateGroupRules(nil)
+	groupRules := slo.GenerateGroupRules(nil, false)
 	assert.Len(t, groupRules, 3)
 
 	assert.Equal(t, rulefmt.RuleGroup{
@@ -488,7 +488,7 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 		},
 	}
 
-	groupRules := slo.GenerateGroupRules(nil)
+	groupRules := slo.GenerateGroupRules(nil, false)
 	assert.Len(t, groupRules, 3)
 
 	assert.Equal(t, rulefmt.RuleGroup{
@@ -697,7 +697,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 		},
 	}
 
-	alertRules := slo.GenerateAlertRules(nil)
+	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
 	assert.Equal(t, alertRules[0], rulefmt.Rule{
@@ -807,7 +807,7 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 		},
 	}
 
-	alertRules := slo.GenerateAlertRules(nil)
+	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
 	assert.Equal(t, alertRules[0], rulefmt.Rule{
@@ -927,7 +927,7 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 		},
 	}
 
-	alertRules := slo.GenerateAlertRules(sloClass)
+	alertRules := slo.GenerateAlertRules(sloClass, false)
 	assert.Len(t, alertRules, 4)
 
 	assert.Equal(t, alertRules[0], rulefmt.Rule{
@@ -1004,6 +1004,277 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 		Annotations: slo.Annotations,
 	})
 
-	alertRules = slo.GenerateAlertRules(noLatencyClass)
+	alertRules = slo.GenerateAlertRules(noLatencyClass, false)
 	assert.Len(t, alertRules, 2)
+}
+
+func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
+	slo := &SLO{
+		Name: "my-team.my-service.payment",
+		Objectives: Objectives{
+			Availability: 99.9,
+			Latency: []methods.LatencyTarget{
+				{
+					LE:     "0.1",
+					Target: 95,
+				},
+				{
+					LE:     "0.5",
+					Target: 99,
+				},
+			},
+		},
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "multi-window",
+		},
+		LatencyRecord: ExprBlock{
+			AlertMethod: "multi-window",
+		},
+		Labels: map[string]string{
+			"channel": "my-channel",
+		},
+		Annotations: map[string]string{
+			"message":   "Service A has lower SLI",
+			"link":      "http://wiki.ops/1234",
+			"dashboard": "http://grafana.globo.com",
+		},
+	}
+
+	alertRules := slo.GenerateAlertRules(nil, true)
+	assert.Len(t, alertRules, 2)
+
+	assert.Equal(t, alertRules[0], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.errors.page",
+		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
+		Labels: map[string]string{
+			"channel":  "my-channel",
+			"severity": "page",
+		},
+		Annotations: slo.Annotations,
+	})
+
+	assert.Equal(t, alertRules[1], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.latency.page",
+		Expr: ("(" +
+			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
+			" and " +
+			"slo:service_latency:ratio_rate_5m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
+			") or (" +
+			"slo:service_latency:ratio_rate_6h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.7" +
+			" and " +
+			"slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.7" +
+			") or (" +
+			"slo:service_latency:ratio_rate_1h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.856" +
+			" and " +
+			"slo:service_latency:ratio_rate_5m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.856" +
+			") or (" +
+			"slo:service_latency:ratio_rate_6h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.94" +
+			" and " +
+			"slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.94" +
+			")"),
+
+		Labels: map[string]string{
+			"channel":  "my-channel",
+			"severity": "page",
+		},
+		Annotations: slo.Annotations,
+	})
+
+}
+
+func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
+	slo := &SLO{
+		Name: "my-team.my-service.payment",
+		Objectives: Objectives{
+			Availability: 99.9,
+			Latency: []methods.LatencyTarget{
+				{
+					LE:     "0.1",
+					Target: 90,
+				},
+				{
+					LE:     "0.5",
+					Target: 99,
+				},
+			},
+		},
+		TrafficRateRecord: ExprBlock{
+			Expr: "sum(rate(http_total[$window]))",
+		},
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "sum(rate(http_errors[$window]))/sum(rate(http_total[$window]))",
+		},
+		LatencyRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "sum(rate(http_bucket{le=\"$le\"}[$window]))/sum(rate(http_total[$window]))",
+		},
+		Labels: map[string]string{
+			"team": "team-avengers",
+		},
+		Annotations: map[string]string{
+			"message":   "Service A has lower SLI",
+			"link":      "http://wiki.ops/1234",
+			"dashboard": "http://grafana.globo.com",
+		},
+	}
+
+	groupRules := slo.GenerateGroupRules(nil, true)
+	assert.Len(t, groupRules, 2)
+
+	assert.Equal(t, groupRules[0], rulefmt.RuleGroup{
+		Name:     "slo:my-team.my-service.payment:short",
+		Interval: model.Duration(time.Second * 30),
+		Rules: []rulefmt.Rule{
+			// 5m
+			{
+				Record: "slo:service_traffic:ratio_rate_5m",
+				Expr:   "sum(rate(http_total[5m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_5m",
+				Expr:   "sum(rate(http_errors[5m]))/sum(rate(http_total[5m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_5m",
+				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[5m]))/sum(rate(http_total[5m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+					"le":      "0.1",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_5m",
+				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[5m]))/sum(rate(http_total[5m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+					"le":      "0.5",
+				},
+			},
+
+			// 30m
+			{
+				Record: "slo:service_traffic:ratio_rate_30m",
+				Expr:   "sum(rate(http_total[30m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_30m",
+				Expr:   "sum(rate(http_errors[30m]))/sum(rate(http_total[30m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_30m",
+				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[30m]))/sum(rate(http_total[30m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"le":      "0.1",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_30m",
+				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[30m]))/sum(rate(http_total[30m]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"le":      "0.5",
+					"team":    "team-avengers",
+				},
+			},
+
+			// 1h
+			{
+				Record: "slo:service_traffic:ratio_rate_1h",
+				Expr:   "sum(rate(http_total[1h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_1h",
+				Expr:   "sum(rate(http_errors[1h]))/sum(rate(http_total[1h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_1h",
+				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[1h]))/sum(rate(http_total[1h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+					"le":      "0.1",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_1h",
+				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[1h]))/sum(rate(http_total[1h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"le":      "0.5",
+					"team":    "team-avengers",
+				},
+			},
+		},
+	})
+
+	assert.Equal(t, groupRules[1], rulefmt.RuleGroup{
+		Name:     "slo:my-team.my-service.payment:medium",
+		Interval: model.Duration(time.Second * 120),
+		Rules: []rulefmt.Rule{
+			// 6h
+			{
+				Record: "slo:service_traffic:ratio_rate_6h",
+				Expr:   "sum(rate(http_total[6h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_errors_total:ratio_rate_6h",
+				Expr:   "sum(rate(http_errors[6h]))/sum(rate(http_total[6h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_6h",
+				Expr:   "sum(rate(http_bucket{le=\"0.1\"}[6h]))/sum(rate(http_total[6h]))",
+				Labels: map[string]string{
+					"service": "my-team.my-service.payment",
+					"le":      "0.1",
+					"team":    "team-avengers",
+				},
+			},
+			{
+				Record: "slo:service_latency:ratio_rate_6h",
+				Expr:   "sum(rate(http_bucket{le=\"0.5\"}[6h]))/sum(rate(http_total[6h]))",
+				Labels: map[string]string{
+					"team":    "team-avengers",
+					"service": "my-team.my-service.payment",
+					"le":      "0.5",
+				},
+			},
+		},
+	})
 }

@@ -80,7 +80,7 @@ func (o *Objectives) LatencyBuckets() []string {
 	return latencyBuckets
 }
 
-func (slo *SLO) GenerateAlertRules(sloClass *Class) []rulefmt.Rule {
+func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefmt.Rule {
 	objectives := slo.Objectives
 	if sloClass != nil {
 		objectives = sloClass.Objectives
@@ -104,6 +104,18 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class) []rulefmt.Rule {
 		slo.fillMetadata(&rule)
 	}
 
+	if disableTicket {
+		alertRulesWithoutTicket := []rulefmt.Rule{}
+
+		for _, rule := range alertRules {
+			if rule.Labels["severity"] != "ticket" {
+				alertRulesWithoutTicket = append(alertRulesWithoutTicket, rule)
+			}
+		}
+
+		return alertRulesWithoutTicket
+	}
+
 	return alertRules
 }
 
@@ -117,7 +129,7 @@ func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
 	}
 }
 
-func (slo *SLO) GenerateGroupRules(sloClass *Class) []rulefmt.RuleGroup {
+func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefmt.RuleGroup {
 	rules := []rulefmt.RuleGroup{}
 
 	objectives := slo.Objectives
@@ -130,6 +142,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class) []rulefmt.RuleGroup {
 	}
 
 	for _, sample := range defaultSamples {
+
 		interval, err := model.ParseDuration(sample.Interval)
 		if err != nil {
 			log.Fatal(err)
@@ -141,6 +154,10 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class) []rulefmt.RuleGroup {
 		}
 
 		for _, bucket := range sample.Buckets {
+			if disableTicket && isTicketSample(bucket) {
+				continue
+			}
+
 			ruleGroup.Rules = append(ruleGroup.Rules, slo.generateRules(bucket, latencyBuckets)...)
 		}
 

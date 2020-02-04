@@ -23,3 +23,15 @@ var defaultSamples = []sample{
 		Buckets:  []string{"1d", "3d"},
 	},
 }
+
+var disabletBucketsForTickets = []string{"3d", "1d", "2h"}
+
+func isTicketSample(sample string) bool {
+	for _, bucketSample := range disabletBucketsForTickets {
+		if bucketSample == sample {
+			return true
+		}
+	}
+
+	return false
+}

@@ -12,13 +12,15 @@ import (
 
 func main() {
 	var (
-		sloPath     = ""
-		classesPath = ""
-		ruleOutput  = ""
+		sloPath       = ""
+		classesPath   = ""
+		ruleOutput    = ""
+		disableTicket = false
 	)
 	flag.StringVar(&sloPath, "slo.path", "", "A YML file describing SLOs")
 	flag.StringVar(&classesPath, "classes.path", "", "A YML file describing SLOs classes (optional)")
 	flag.StringVar(&ruleOutput, "rule.output", "", "Output to describe a prometheus rules")
+	flag.BoolVar(&disableTicket, "disable.ticket", false, "Disable generation of alerts of kind ticket")
 
 	flag.Parse()
 
@@ -57,10 +59,10 @@ func main() {
 			log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
 		}
 
-		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules(sloClass)...)
+		ruleGroups.Groups = append(ruleGroups.Groups, slo.GenerateGroupRules(sloClass, disableTicket)...)
 		ruleGroups.Groups = append(ruleGroups.Groups, rulefmt.RuleGroup{
 			Name:  "slo:" + slo.Name + ":alert",
-			Rules: slo.GenerateAlertRules(sloClass),
+			Rules: slo.GenerateAlertRules(sloClass, disableTicket),
 		})
 	}
 
