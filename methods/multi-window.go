@@ -10,14 +10,14 @@ import (
 
 type MultiWindowAlgorithm struct{}
 
-func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarget float64) []rulefmt.Rule {
+func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.Rule, error) {
 	rules := []rulefmt.Rule{
 		{
-			Alert: "slo:" + serviceName + ".errors.page",
+			Alert: "slo:" + opts.ServiceName + ".errors.page",
 			Expr: multiBurnRate(MultiRateErrorOpts{
 				Metric: "slo:service_errors_total",
-				Labels: labels.New(labels.Label{"service", serviceName}),
-				Value:  (1 - availabilityTarget/100),
+				Labels: labels.New(labels.Label{"service", opts.ServiceName}),
+				Value:  (1 - opts.AvailabilityTarget/100),
 				Kind:   "page",
 			}),
 			Annotations: map[string]string{},
@@ -26,11 +26,11 @@ func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarge
 			},
 		},
 		{
-			Alert: "slo:" + serviceName + ".errors.ticket",
+			Alert: "slo:" + opts.ServiceName + ".errors.ticket",
 			Expr: multiBurnRate(MultiRateErrorOpts{
 				Metric: "slo:service_errors_total",
-				Labels: labels.New(labels.Label{"service", serviceName}),
-				Value:  (1 - availabilityTarget/100),
+				Labels: labels.New(labels.Label{"service", opts.ServiceName}),
+				Value:  (1 - opts.AvailabilityTarget/100),
 				Kind:   "ticket",
 			}),
 			Annotations: map[string]string{},
@@ -40,17 +40,17 @@ func (*MultiWindowAlgorithm) AlertForError(serviceName string, availabilityTarge
 		},
 	}
 
-	return rules
+	return rules, nil
 }
 
-func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []LatencyTarget) []rulefmt.Rule {
+func (*MultiWindowAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulefmt.Rule, error) {
 	rules := []rulefmt.Rule{
 		{
-			Alert: "slo:" + serviceName + ".latency.page",
+			Alert: "slo:" + opts.ServiceName + ".latency.page",
 			Expr: multiBurnRateLatency(MultiRateLatencyOpts{
 				Metric:  "slo:service_latency",
-				Label:   labels.Label{"service", serviceName},
-				Buckets: targets,
+				Label:   labels.Label{"service", opts.ServiceName},
+				Buckets: opts.Targets,
 				Kind:    "page",
 			}),
 			Annotations: map[string]string{},
@@ -59,11 +59,11 @@ func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []Laten
 			},
 		},
 		{
-			Alert: "slo:" + serviceName + ".latency.ticket",
+			Alert: "slo:" + opts.ServiceName + ".latency.ticket",
 			Expr: multiBurnRateLatency(MultiRateLatencyOpts{
 				Metric:  "slo:service_latency",
-				Label:   labels.Label{"service", serviceName},
-				Buckets: targets,
+				Label:   labels.Label{"service", opts.ServiceName},
+				Buckets: opts.Targets,
 				Kind:    "ticket",
 			}),
 			Annotations: map[string]string{},
@@ -73,7 +73,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(serviceName string, targets []Laten
 		},
 	}
 
-	return rules
+	return rules, nil
 }
 
 type MultiRateErrorOpts struct {

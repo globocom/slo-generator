@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	methods "github.com/globocom/slo-generator/methods"
+	samples "github.com/globocom/slo-generator/samples"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
@@ -34,6 +35,8 @@ type SLOSpec struct {
 
 type ExprBlock struct {
 	AlertMethod string   `yaml:"alertMethod"`
+	AlertWindow string   `yaml:"alertWindow"`
+	AlertWait   string   `yaml:"alertWait"`
 	Buckets     []string `yaml:"buckets"` // used to define buckets of histogram when using latency expression
 	Expr        string   `yaml:"expr"`
 }
@@ -88,16 +91,42 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 
 	alertRules := []rulefmt.Rule{}
 
-	errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
-	if errorMethod != nil {
-		errorRules := errorMethod.AlertForError(slo.Name, objectives.Availability)
+	if slo.ErrorRateRecord.AlertMethod != "" {
+		errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
+		if errorMethod == nil {
+			log.Panicf("alertMethod %s is not valid", slo.ErrorRateRecord.AlertMethod)
+		}
+
+		errorRules, err := errorMethod.AlertForError(&methods.AlertErrorOptions{
+			ServiceName:        slo.Name,
+			AvailabilityTarget: objectives.Availability,
+			AlertWindow:        slo.ErrorRateRecord.AlertWindow,
+			AlertWait:          slo.ErrorRateRecord.AlertWait,
+		})
+		if err != nil {
+			log.Panicf("Could not generate alert, err: %s", err.Error())
+		}
 		alertRules = append(alertRules, errorRules...)
 	}
 
-	latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
-	if latencyMethod != nil && objectives.Latency != nil {
-		latencyRules := latencyMethod.AlertForLatency(slo.Name, objectives.Latency)
-		alertRules = append(alertRules, latencyRules...)
+	if slo.LatencyRecord.AlertMethod != "" {
+		latencyMethod := methods.Get(slo.LatencyRecord.AlertMethod)
+		if latencyMethod == nil {
+			log.Panicf("alertMethod %s is not valid", slo.LatencyRecord.AlertMethod)
+		}
+
+		if objectives.Latency != nil {
+			latencyRules, err := latencyMethod.AlertForLatency(&methods.AlertLatencyOptions{
+				ServiceName: slo.Name,
+				Targets:     objectives.Latency,
+				AlertWindow: slo.LatencyRecord.AlertWindow,
+				AlertWait:   slo.LatencyRecord.AlertWait,
+			})
+			if err != nil {
+				log.Panicf("Could not generate alert, err: %s", err.Error())
+			}
+			alertRules = append(alertRules, latencyRules...)
+		}
 	}
 
 	for _, rule := range alertRules {
@@ -141,7 +170,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefm
 		latencyBuckets = slo.LatencyRecord.Buckets
 	}
 
-	for _, sample := range defaultSamples {
+	for _, sample := range samples.DefaultSamples {
 
 		interval, err := model.ParseDuration(sample.Interval)
 		if err != nil {
@@ -154,7 +183,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefm
 		}
 
 		for _, bucket := range sample.Buckets {
-			if disableTicket && isTicketSample(bucket) {
+			if disableTicket && samples.IsTicketSample(bucket) {
 				continue
 			}
 
