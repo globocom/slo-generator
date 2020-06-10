@@ -1,23 +1,35 @@
 # slo-generator
 Easily setup a service level objective using prometheus, based on lessons from the [SRE workbook](https://landing.google.com/sre/workbook/chapters/alerting-on-slos/).
 
+```
+slo-generator -slo.path=slo_example.yml -rule.output rule.yml
+```
 
-# Alert methods currently supported
-
-- [ ] 1. Target Error Rate ≥ SLO Threshold
-- [ ] 2. Increased Alert Window
-- [ ] 3. Incrementing Alert Duration
-- [ ] 4. Alert on Burn Rate
-- [ ] 5. Multiple Burn Rate Alerts
-- [x] 6. Multiwindow, Multi-Burn-Rate Alerts
 
 # Generating
 
 Look the file [slo_example.yml](./examples/slo_example.yml) to see how to parametrize SLOs and generate Prometheus rules by running the following command:
 
-```
-slo-generator -slo.path=slo_example.yml -rule.output rule.yml
-```
+# Alert methods currently supported
+
+- [x] 1. Target Error Rate ≥ SLO Threshold, using `alertMethod: simple`
+- [x] 2. Increased Alert Window, using `alertMethod: simple`
+- [x] 3. Incrementing Alert Duration, using `alertMethod: simple`
+- [ ] 4. Alert on Burn Rate
+- [ ] 5. Multiple Burn Rate Alerts
+- [x] 6. Multiwindow, Multi-Burn-Rate Alerts, using `alertMethod: multi-window`
+
+## alertMethod: simple
+
+Look the file [slo_simple_example.yml](./examples/slo_simple_example.yml) to see a full example of usage.
+the simple alert method require two params:
+
+1. alertWindow: how far back in time will used to alerting. supported values: 5m, 30m, 1h, 2h, 6h, 1d and 3d.
+2. alertWait: 10m: for long time will begin fire an alert.
+
+## alertMethod: multiwindow
+
+The philosofy of this alert is described on the section of book: (https://landing.google.com/sre/workbook/chapters/alerting-on-slos#6-multiwindow-multi-burn-rate-alerts)
 
 # SLOs at scale
 
