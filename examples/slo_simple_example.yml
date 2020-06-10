@@ -1,0 +1,34 @@
+slos:
+  - name: myteam-a.service-a
+    objectives:
+      availability: 99
+      latency:
+      - le: 5.0 # 95% < 5s
+        target: 95
+
+      - le: 10.0 # 97% < 10s
+        target: 97
+    labels:
+      slack_channel: '_team_a'
+      platform: myplatform
+    annotations:
+      message: Service A Error Budget consumption
+      link: https://grafana.myservice.com/URL
+
+    trafficRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+    errorRateRecord:
+      alertMethod: simple
+      alertWindow: 30m
+      alertWait: 10m
+      expr: |
+        sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+    latencyRecord:
+      alertMethod: simple
+      alertWindow: 30m
+      alertWait: 10m
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="$le"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
