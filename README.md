@@ -25,7 +25,7 @@ Look the file [slo_simple_example.yml](./examples/slo_simple_example.yml) to see
 the simple alert method require two params:
 
 1. alertWindow: how far back in time will used to alerting. supported values: 5m, 30m, 1h, 2h, 6h, 1d and 3d.
-2. alertWait: 10m: for long time will begin fire an alert.
+2. alertWait: for long time will begin fire an alert.
 
 ## alertMethod: multiwindow
 
