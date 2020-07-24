@@ -18,7 +18,8 @@ type AlertErrorOptions struct {
 	AvailabilityTarget float64
 	SLOWindow          time.Duration
 
-	Windows []Window
+	Windows     []Window
+	ShortWindow bool
 
 	// important for simple algorithm
 	AlertWindow string
@@ -30,7 +31,8 @@ type AlertLatencyOptions struct {
 	Targets     []LatencyTarget
 	SLOWindow   time.Duration
 
-	Windows []Window
+	Windows     []Window
+	ShortWindow bool
 
 	// important for simple algorithm
 	AlertWindow string
@@ -41,6 +43,9 @@ type AlertMethod interface {
 	AlertForError(*AlertErrorOptions) ([]rulefmt.Rule, error)
 	AlertForLatency(*AlertLatencyOptions) ([]rulefmt.Rule, error)
 }
+
+// Severities list of available severities: page and ticket
+var Severities = []string{"page", "ticket"}
 
 var methods = map[string]AlertMethod{}
 

@@ -841,6 +841,7 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 		ErrorRateRecord: ExprBlock{
 			AlertMethod: "multi-window",
 			Expr:        "kk",
+			ShortWindow: true,
 			Windows: []methods.Window{
 				{
 					Duration:     h1,
@@ -951,6 +952,90 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+		},
+		Annotations: slo.Annotations,
+	})
+}
+
+func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
+	d30, err := model.ParseDuration("30d")
+	assert.NoError(t, err)
+
+	h1, err := model.ParseDuration("1h")
+	assert.NoError(t, err)
+
+	slo := &SLO{
+		Name: "my-team.my-service.payment",
+		Objectives: Objectives{
+			Availability: 99.9,
+			Window:       d30,
+			Latency: []methods.LatencyTarget{
+				{
+					LE:     "0.1",
+					Target: 95,
+				},
+				{
+					LE:     "0.5",
+					Target: 99,
+				},
+			},
+		},
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "kk",
+			ShortWindow: false,
+			Windows: []methods.Window{
+				{
+					Duration:     h1,
+					Consumption:  5,
+					Notification: "page",
+				},
+			},
+		},
+		LatencyRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "kk",
+			ShortWindow: false,
+			Windows: []methods.Window{
+				{
+					Duration:     h1,
+					Consumption:  2,
+					Notification: "page",
+				},
+			},
+		},
+		Labels: map[string]string{
+			"channel": "my-channel",
+		},
+		Annotations: map[string]string{
+			"message":   "Service A has lower SLI",
+			"link":      "http://wiki.ops/1234",
+			"dashboard": "http://grafana.globo.com",
+		},
+	}
+
+	alertRules := slo.GenerateAlertRules(nil, false)
+	assert.Len(t, alertRules, 2)
+
+	assert.Equal(t, alertRules[0], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.errors.page",
+		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (36 * 0.001)",
+		Labels: map[string]string{
+			"channel":  "my-channel",
+			"severity": "page",
+		},
+		Annotations: slo.Annotations,
+	})
+
+	assert.Equal(t, alertRules[1], rulefmt.Rule{
+		Alert: "slo:my-team.my-service.payment.latency.page",
+		Expr: ("slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
+			" or " +
+			"slo:service_latency:ratio_rate_1h{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.856"),
+
+		Labels: map[string]string{
+			"channel":  "my-channel",
+			"severity": "page",
 		},
 		Annotations: slo.Annotations,
 	})

@@ -40,6 +40,7 @@ type ExprBlock struct {
 	AlertWindow string           `yaml:"alertWindow"`
 	AlertWait   string           `yaml:"alertWait"`
 	Windows     []methods.Window `yaml:"windows"`
+	ShortWindow bool             `yaml:"shortWindow"`
 	Buckets     []string         `yaml:"buckets"` // used to define buckets of histogram when using latency expression
 	Expr        string           `yaml:"expr"`
 }
@@ -105,6 +106,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 			ServiceName:        slo.Name,
 			AvailabilityTarget: objectives.Availability,
 			SLOWindow:          time.Duration(objectives.Window),
+			ShortWindow:        slo.ErrorRateRecord.ShortWindow,
 			Windows:            slo.ErrorRateRecord.Windows,
 			AlertWindow:        slo.ErrorRateRecord.AlertWindow,
 			AlertWait:          slo.ErrorRateRecord.AlertWait,
@@ -126,6 +128,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 				ServiceName: slo.Name,
 				Targets:     objectives.Latency,
 				SLOWindow:   time.Duration(objectives.Window),
+				ShortWindow: slo.LatencyRecord.ShortWindow,
 				Windows:     slo.LatencyRecord.Windows,
 				AlertWindow: slo.LatencyRecord.AlertWindow,
 				AlertWait:   slo.LatencyRecord.AlertWait,

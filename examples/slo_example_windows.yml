@@ -22,6 +22,7 @@ slos:
 
     errorRateRecord:
       alertMethod: multi-window
+      shortWindow: true
       alertWindows:
         - duration: 1h
           consumption: 2%
