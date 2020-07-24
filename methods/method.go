@@ -1,10 +1,24 @@
 package methods
 
-import "github.com/prometheus/prometheus/pkg/rulefmt"
+import (
+	"time"
+
+	"github.com/prometheus/common/model"
+	"github.com/prometheus/prometheus/pkg/rulefmt"
+)
+
+type Window struct {
+	Duration     model.Duration `yaml:"duration"`
+	Consumption  float64        `yaml:"consumption"`
+	Notification string         `yaml:"notification"`
+}
 
 type AlertErrorOptions struct {
 	ServiceName        string
 	AvailabilityTarget float64
+	SLOWindow          time.Duration
+
+	Windows []Window
 
 	// important for simple algorithm
 	AlertWindow string
@@ -14,6 +28,9 @@ type AlertErrorOptions struct {
 type AlertLatencyOptions struct {
 	ServiceName string
 	Targets     []LatencyTarget
+	SLOWindow   time.Duration
+
+	Windows []Window
 
 	// important for simple algorithm
 	AlertWindow string
