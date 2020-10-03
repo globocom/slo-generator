@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
-	methods "github.com/globocom/slo-generator/methods"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/globocom/slo-generator/methods"
 )
 
 func TestSLOGenerateGroupRules(t *testing.T) {
@@ -772,6 +773,36 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			"severity": "ticket",
 		},
 		Annotations: slo.Annotations,
+	})
+}
+
+func TestSLOGenerateAlertRulesWithInvalidAlert(t *testing.T) {
+	slo := &SLO{
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "INVALID",
+			Expr:        "kk",
+		},
+	}
+
+	assert.PanicsWithValue(t, "alertMethod INVALID is not valid", func() {
+		slo.GenerateAlertRules(nil, false)
+	})
+}
+
+func TestSLOGenerateAlertRulesWithInvalidLatencyMethod(t *testing.T) {
+	slo := &SLO{
+		ErrorRateRecord: ExprBlock{
+			AlertMethod: "multi-window",
+			Expr:        "kk",
+		},
+		LatencyRecord: ExprBlock{
+			AlertMethod: "INVALID",
+			Expr:        "kk",
+		},
+	}
+
+	assert.PanicsWithValue(t, "alertMethod INVALID is not valid", func() {
+		slo.GenerateAlertRules(nil, false)
 	})
 }
 

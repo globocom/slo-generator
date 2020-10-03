@@ -4,10 +4,11 @@ import (
 	"testing"
 	"time"
 
-	methods "github.com/globocom/slo-generator/methods"
 	"github.com/prometheus/common/model"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/globocom/slo-generator/methods"
 )
 
 func TestSimpleSLOGenerateAlertRules(t *testing.T) {
@@ -64,7 +65,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 
 	assert.Equal(t, alertRules[1], rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
-		Expr:  ("slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.95 or slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.99"),
+		Expr:  "slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.95 or slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.99",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
