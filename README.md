@@ -16,7 +16,7 @@ Look the file [slo_example.yml](./examples/slo_example.yml) to see how to parame
 - [x] 2. Increased Alert Window, using `alertMethod: simple`
 - [x] 3. Incrementing Alert Duration, using `alertMethod: simple`
 - [ ] 4. Alert on Burn Rate
-- [ ] 5. Multiple Burn Rate Alerts
+- [x] 5. Multiple Burn Rate Alerts, using `alertMethod: multi-window and shortWindow: false`
 - [x] 6. Multiwindow, Multi-Burn-Rate Alerts, using `alertMethod: multi-window`
 
 ## alertMethod: simple
@@ -27,7 +27,7 @@ the simple alert method require two params:
 1. alertWindow: how far back in time will used to alerting. supported values: 5m, 30m, 1h, 2h, 6h, 1d and 3d.
 2. alertWait: for long time will begin fire an alert.
 
-## alertMethod: multiwindow
+## alertMethod: multi-window
 
 The philosofy of this alert is described on the section of book: (https://landing.google.com/sre/workbook/chapters/alerting-on-slos#6-multiwindow-multi-burn-rate-alerts)
 
