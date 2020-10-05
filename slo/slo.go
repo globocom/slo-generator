@@ -5,9 +5,10 @@ import (
 	"log"
 	"strings"
 
-	methods "github.com/globocom/slo-generator/methods"
-	samples "github.com/globocom/slo-generator/samples"
+	"github.com/globocom/slo-generator/methods"
+	"github.com/globocom/slo-generator/samples"
 	"github.com/prometheus/common/model"
+
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
 
@@ -74,7 +75,7 @@ type Objectives struct {
 // LatencyBuckets returns all boundaries of latencies
 // is the same boundaries of a prometheus histogram (aka: le) used to calculate latency SLOs
 func (o *Objectives) LatencyBuckets() []string {
-	latencyBuckets := []string{}
+	var latencyBuckets []string
 
 	for _, latencyBucket := range o.Latency {
 		latencyBuckets = append(latencyBuckets, latencyBucket.LE)
@@ -89,7 +90,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 		objectives = sloClass.Objectives
 	}
 
-	alertRules := []rulefmt.Rule{}
+	var alertRules []rulefmt.Rule
 
 	if slo.ErrorRateRecord.AlertMethod != "" {
 		errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
@@ -134,7 +135,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 	}
 
 	if disableTicket {
-		alertRulesWithoutTicket := []rulefmt.Rule{}
+		var alertRulesWithoutTicket []rulefmt.Rule
 
 		for _, rule := range alertRules {
 			if rule.Labels["severity"] != "ticket" {
@@ -159,7 +160,7 @@ func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
 }
 
 func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefmt.RuleGroup {
-	rules := []rulefmt.RuleGroup{}
+	var rules []rulefmt.RuleGroup
 
 	objectives := slo.Objectives
 	if sloClass != nil {
@@ -177,7 +178,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefm
 			log.Fatal(err)
 		}
 		ruleGroup := rulefmt.RuleGroup{
-			Name:     "slo:" + slo.Name + ":" + sample.Name,
+			Name:     fmt.Sprintf("slo:%s:%s", slo.Name, sample.Name),
 			Interval: interval,
 			Rules:    []rulefmt.Rule{},
 		}
@@ -199,7 +200,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefm
 }
 
 func (slo *SLO) labels() map[string]string {
-	labels := map[string]string{}
+	labels := make(map[string]string)
 	if !slo.HonorLabels {
 		labels["service"] = slo.Name
 	}
@@ -210,10 +211,10 @@ func (slo *SLO) labels() map[string]string {
 }
 
 func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.Rule {
-	rules := []rulefmt.Rule{}
+	var rules []rulefmt.Rule
 	if slo.TrafficRateRecord.Expr != "" {
 		trafficRateRecord := rulefmt.Rule{
-			Record: "slo:service_traffic:ratio_rate_" + bucket,
+			Record: fmt.Sprintf("slo:service_traffic:ratio_rate_%s", bucket),
 			Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
 			Labels: slo.labels(),
 		}
@@ -223,7 +224,7 @@ func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.
 
 	if slo.ErrorRateRecord.Expr != "" {
 		errorRateRecord := rulefmt.Rule{
-			Record: "slo:service_errors_total:ratio_rate_" + bucket,
+			Record: fmt.Sprintf("slo:service_errors_total:ratio_rate_%s", bucket),
 			Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
 			Labels: slo.labels(),
 		}
@@ -234,7 +235,7 @@ func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.
 	if slo.LatencyQuantileRecord.Expr != "" {
 		for _, quantile := range quantiles {
 			latencyQuantileRecord := rulefmt.Rule{
-				Record: "slo:service_latency:" + quantile.name + "_" + bucket,
+				Record: fmt.Sprintf("slo:service_latency:%s_%s", quantile.name, bucket),
 				Expr:   slo.LatencyQuantileRecord.ComputeQuantile(bucket, quantile.quantile),
 				Labels: slo.labels(),
 			}
