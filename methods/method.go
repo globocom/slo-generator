@@ -7,10 +7,23 @@ import (
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
 
+type NotificationSeverity string
+
+var (
+	NotificationPageSeverity   = NotificationSeverity("page")
+	NotificationTicketSeverity = NotificationSeverity("ticket")
+
+	// Severities list of available severities: page and ticket
+	Severities = []NotificationSeverity{
+		NotificationPageSeverity,
+		NotificationTicketSeverity,
+	}
+)
+
 type Window struct {
-	Duration     model.Duration `yaml:"duration"`
-	Consumption  float64        `yaml:"consumption"`
-	Notification string         `yaml:"notification"`
+	Duration     model.Duration       `yaml:"duration"`
+	Consumption  float64              `yaml:"consumption"`
+	Notification NotificationSeverity `yaml:"notification"`
 }
 
 type AlertErrorOptions struct {
@@ -43,9 +56,6 @@ type AlertMethod interface {
 	AlertForError(*AlertErrorOptions) ([]rulefmt.Rule, error)
 	AlertForLatency(*AlertLatencyOptions) ([]rulefmt.Rule, error)
 }
-
-// Severities list of available severities: page and ticket
-var Severities = []string{"page", "ticket"}
 
 var methods = map[string]AlertMethod{}
 

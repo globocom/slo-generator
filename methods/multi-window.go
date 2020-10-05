@@ -21,7 +21,7 @@ func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.R
 			continue
 		}
 		rules = append(rules, rulefmt.Rule{
-			Alert: "slo:" + opts.ServiceName + ".errors." + severity,
+			Alert: "slo:" + opts.ServiceName + ".errors." + string(severity),
 			Expr: multiBurnRate(MultiRateErrorOpts{
 				Rates:  ratesMap[severity],
 				Metric: "slo:service_errors_total",
@@ -30,7 +30,7 @@ func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.R
 			}),
 			Annotations: map[string]string{},
 			Labels: map[string]string{
-				"severity": severity,
+				"severity": string(severity),
 			},
 		})
 	}
@@ -46,7 +46,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulef
 			continue
 		}
 		rules = append(rules, rulefmt.Rule{
-			Alert: "slo:" + opts.ServiceName + ".latency." + severity,
+			Alert: "slo:" + opts.ServiceName + ".latency." + string(severity),
 			Expr: multiBurnRateLatency(MultiRateLatencyOpts{
 				Rates:   ratesMap[severity],
 				Metric:  "slo:service_latency",
@@ -55,7 +55,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulef
 			}),
 			Annotations: map[string]string{},
 			Labels: map[string]string{
-				"severity": severity,
+				"severity": string(severity),
 			},
 		})
 	}
@@ -83,8 +83,8 @@ type MultiRateWindow struct {
 	ShortWindow string
 }
 
-var multiRateWindows = map[string][]MultiRateWindow{
-	"page": {
+var multiRateWindows = map[NotificationSeverity][]MultiRateWindow{
+	NotificationPageSeverity: {
 		{
 			Multiplier:  14.4,
 			LongWindow:  "1h",
@@ -96,7 +96,7 @@ var multiRateWindows = map[string][]MultiRateWindow{
 			ShortWindow: "30m",
 		},
 	},
-	"ticket": {
+	NotificationTicketSeverity: {
 		{
 			Multiplier:  3,
 			LongWindow:  "1d",
@@ -110,13 +110,13 @@ var multiRateWindows = map[string][]MultiRateWindow{
 	},
 }
 
-func genMultiRateWindows(SLOWindow time.Duration, shortWindow bool, windows []Window) map[string][]MultiRateWindow {
+func genMultiRateWindows(SLOWindow time.Duration, shortWindow bool, windows []Window) map[NotificationSeverity][]MultiRateWindow {
 	if len(windows) == 0 {
 		// Use Default multiRateWindows from SRE Book
 		return multiRateWindows
 	}
 
-	mrate := map[string][]MultiRateWindow{}
+	mrate := map[NotificationSeverity][]MultiRateWindow{}
 	wHours := float64(SLOWindow / time.Hour)
 
 	for _, w := range windows {
