@@ -822,6 +822,7 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 	d3, err := model.ParseDuration("3d")
 	assert.NoError(t, err)
 
+	shortWindow := true
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		Objectives: Objectives{
@@ -841,7 +842,7 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 		ErrorRateRecord: ExprBlock{
 			AlertMethod: "multi-window",
 			Expr:        "kk",
-			ShortWindow: true,
+			ShortWindow: &shortWindow,
 			Windows: []methods.Window{
 				{
 					Duration:     h1,
@@ -964,6 +965,7 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 	h1, err := model.ParseDuration("1h")
 	assert.NoError(t, err)
 
+	shortWindow := false
 	slo := &SLO{
 		Name: "my-team.my-service.payment",
 		Objectives: Objectives{
@@ -983,7 +985,7 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 		ErrorRateRecord: ExprBlock{
 			AlertMethod: "multi-window",
 			Expr:        "kk",
-			ShortWindow: false,
+			ShortWindow: &shortWindow,
 			Windows: []methods.Window{
 				{
 					Duration:     h1,
@@ -995,7 +997,7 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 		LatencyRecord: ExprBlock{
 			AlertMethod: "multi-window",
 			Expr:        "kk",
-			ShortWindow: false,
+			ShortWindow: &shortWindow,
 			Windows: []methods.Window{
 				{
 					Duration:     h1,
