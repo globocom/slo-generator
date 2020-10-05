@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/globocom/slo-generator/methods"
 	"github.com/globocom/slo-generator/samples"
@@ -35,11 +36,23 @@ type SLOSpec struct {
 }
 
 type ExprBlock struct {
-	AlertMethod string   `yaml:"alertMethod"`
-	AlertWindow string   `yaml:"alertWindow"`
-	AlertWait   string   `yaml:"alertWait"`
-	Buckets     []string `yaml:"buckets"` // used to define buckets of histogram when using latency expression
-	Expr        string   `yaml:"expr"`
+	AlertMethod string           `yaml:"alertMethod"`
+	AlertWindow string           `yaml:"alertWindow"`
+	AlertWait   string           `yaml:"alertWait"`
+	Windows     []methods.Window `yaml:"windows"`
+	ShortWindow *bool            `yaml:"shortWindow"`
+	Buckets     []string         `yaml:"buckets"` // used to define buckets of histogram when using latency expression
+	Expr        string           `yaml:"expr"`
+}
+
+func (block *ExprBlock) GetShortWindow() bool {
+	defaultShortWindow := true
+
+	if block.ShortWindow == nil {
+		return defaultShortWindow
+	}
+
+	return *block.ShortWindow
 }
 
 func (block *ExprBlock) ComputeExpr(window, le string) string {
@@ -70,6 +83,7 @@ type SLO struct {
 type Objectives struct {
 	Availability float64                 `yaml:"availability"`
 	Latency      []methods.LatencyTarget `yaml:"latency"`
+	Window       model.Duration          `yaml:"window"`
 }
 
 // LatencyBuckets returns all boundaries of latencies
@@ -101,6 +115,9 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 		errorRules, err := errorMethod.AlertForError(&methods.AlertErrorOptions{
 			ServiceName:        slo.Name,
 			AvailabilityTarget: objectives.Availability,
+			SLOWindow:          time.Duration(objectives.Window),
+			ShortWindow:        slo.ErrorRateRecord.GetShortWindow(),
+			Windows:            slo.ErrorRateRecord.Windows,
 			AlertWindow:        slo.ErrorRateRecord.AlertWindow,
 			AlertWait:          slo.ErrorRateRecord.AlertWait,
 		})
@@ -120,6 +137,9 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 			latencyRules, err := latencyMethod.AlertForLatency(&methods.AlertLatencyOptions{
 				ServiceName: slo.Name,
 				Targets:     objectives.Latency,
+				SLOWindow:   time.Duration(objectives.Window),
+				ShortWindow: slo.LatencyRecord.GetShortWindow(),
+				Windows:     slo.LatencyRecord.Windows,
 				AlertWindow: slo.LatencyRecord.AlertWindow,
 				AlertWait:   slo.LatencyRecord.AlertWait,
 			})

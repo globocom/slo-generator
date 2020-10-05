@@ -1,0 +1,73 @@
+slos:
+  - name: myteam-a.service-a
+    objectives:
+      window: 30d
+      availability: 99
+      latency:
+      - le: 5.0 # 95% < 5s
+        target: 95
+
+      - le: 10.0 # 97% < 10s
+        target: 97
+    labels:
+      slack_channel: '_team_a'
+      platform: myplatform
+    annotations:
+      message: Service A Error Budget consumption
+      link: https://grafana.myservice.com/URL
+
+    trafficRateRecord:
+      expr: |
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+    errorRateRecord:
+      alertMethod: multi-window
+      shortWindow: true
+      alertWindows:
+        - duration: 1h
+          consumption: 2%
+          notification: page
+        - duration: 6h
+          consumption: 5%
+          notification: page
+        - duration: 3d
+          consumption: 10%
+          notification: ticket
+      expr: |
+        sum (rate(http_requests_total{job="service-a", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+    latencyRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-a", le="$le"}[$window])) /
+        sum (rate(http_requests_total{job="service-a"}[$window]))
+
+
+  - name: myteam-b.service-b
+    objectives:
+      availability: 99.9
+      latency:
+      - le: 0.05 # 90% < 50ms
+        target: 90
+
+      - le: 0.10  # 95% < 100ms
+        target: 97
+
+    labels:
+      slack_channel: '_team_b'
+      platform: myplatform
+    annotations:
+      message: Service B Error Budget consumption
+      link:
+    errorRateRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_requests_total{job="service-b", status="5xx"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
+
+    latencyRecord:
+      alertMethod: multi-window
+      expr: |
+        sum (rate(http_request_duration_seconds_bucket{job="service-b", le="$le"}[$window])) /
+        sum (rate(http_requests_total{job="service-b"}[$window]))
