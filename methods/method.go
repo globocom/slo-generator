@@ -33,6 +33,7 @@ type AlertErrorOptions struct {
 
 	Windows     []Window
 	ShortWindow bool
+	BurnRate    float64
 
 	// important for simple algorithm
 	AlertWindow string
@@ -46,6 +47,7 @@ type AlertLatencyOptions struct {
 
 	Windows     []Window
 	ShortWindow bool
+	BurnRate    float64
 
 	// important for simple algorithm
 	AlertWindow string

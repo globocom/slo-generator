@@ -13,7 +13,14 @@ import (
 type SimpleAlgorithm struct{}
 
 func (*SimpleAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.Rule, error) {
-	var waitFor model.Duration
+	var (
+		burnRate float64 = 1
+		waitFor  model.Duration
+	)
+
+	if opts.BurnRate > 0 {
+		burnRate = opts.BurnRate
+	}
 
 	if err := samples.ValidateSample(opts.AlertWindow); err != nil {
 		return nil, err
@@ -27,11 +34,11 @@ func (*SimpleAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.Rule, 
 	}
 
 	ruleLabels := labels.New(labels.Label{"service", opts.ServiceName})
-	errorLimit := (1 - opts.AvailabilityTarget/100)
+	errorLimit := 1 - opts.AvailabilityTarget/100
 	rules := []rulefmt.Rule{
 		{
 			Alert:       "slo:" + opts.ServiceName + ".errors.page",
-			Expr:        fmt.Sprintf("slo:service_errors_total:ratio_rate_%s%s > %.3g", opts.AlertWindow, ruleLabels.String(), errorLimit),
+			Expr:        fmt.Sprintf("slo:service_errors_total:ratio_rate_%s%s > %.3g * %.3g", opts.AlertWindow, ruleLabels.String(), burnRate, errorLimit),
 			For:         waitFor,
 			Annotations: map[string]string{},
 			Labels: map[string]string{
@@ -73,13 +80,20 @@ func (*SimpleAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulefmt.Ru
 }
 
 func simpleLatency(opts *AlertLatencyOptions) string {
-	conditions := []string{}
+	var (
+		conditions []string
+		burnRate   float64 = 1
+	)
+
+	if opts.BurnRate > 0 {
+		burnRate = opts.BurnRate
+	}
 
 	for _, target := range opts.Targets {
-		value := (1 - ((100 - target.Target) * 0.01))
+		value := 1 - ((100 - target.Target) * 0.01)
 
 		lbs := labels.New(labels.Label{"service", opts.ServiceName}, labels.Label{"le", target.LE})
-		condition := fmt.Sprintf(`slo:service_latency:ratio_rate_%s%s < %.3g`, opts.AlertWindow, lbs.String(), value)
+		condition := fmt.Sprintf(`slo:service_latency:ratio_rate_%s%s < %.3g * %.3g`, opts.AlertWindow, lbs.String(), burnRate, value)
 
 		conditions = append(conditions, condition)
 	}

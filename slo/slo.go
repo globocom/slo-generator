@@ -38,6 +38,7 @@ type SLOSpec struct {
 type ExprBlock struct {
 	AlertMethod string           `yaml:"alertMethod"`
 	AlertWindow string           `yaml:"alertWindow"`
+	BurnRate    float64          `yaml:"burnRate"`
 	AlertWait   string           `yaml:"alertWait"`
 	Windows     []methods.Window `yaml:"windows"`
 	ShortWindow *bool            `yaml:"shortWindow"`
@@ -120,6 +121,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 			Windows:            slo.ErrorRateRecord.Windows,
 			AlertWindow:        slo.ErrorRateRecord.AlertWindow,
 			AlertWait:          slo.ErrorRateRecord.AlertWait,
+			BurnRate:           slo.ErrorRateRecord.BurnRate,
 		})
 		if err != nil {
 			log.Panicf("Could not generate alert, err: %s", err.Error())
@@ -142,6 +144,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 				Windows:     slo.LatencyRecord.Windows,
 				AlertWindow: slo.LatencyRecord.AlertWindow,
 				AlertWait:   slo.LatencyRecord.AlertWait,
+				BurnRate:    slo.ErrorRateRecord.BurnRate,
 			})
 			if err != nil {
 				log.Panicf("Could not generate alert, err: %s", err.Error())
