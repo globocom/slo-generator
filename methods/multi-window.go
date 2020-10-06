@@ -26,7 +26,7 @@ func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.R
 				Rates:  ratesMap[severity],
 				Metric: "slo:service_errors_total",
 				Labels: labels.New(labels.Label{"service", opts.ServiceName}),
-				Value:  (1 - opts.AvailabilityTarget/100),
+				Value:  1 - opts.AvailabilityTarget/100,
 			}),
 			Annotations: map[string]string{},
 			Labels: map[string]string{

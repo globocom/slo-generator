@@ -28,6 +28,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 			},
 		},
 		ErrorRateRecord: ExprBlock{
+			BurnRate:    2,
 			AlertMethod: "simple",
 			AlertWindow: "1h",
 			AlertWait:   "5m",
@@ -54,7 +55,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 
 	assert.Equal(t, alertRules[0], rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
-		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > 0.001",
+		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > 2 * 0.001",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
@@ -65,7 +66,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 
 	assert.Equal(t, alertRules[1], rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
-		Expr:  "slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.95 or slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 0.99",
+		Expr:  "slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 2 * 0.95 or slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 2 * 0.99",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
