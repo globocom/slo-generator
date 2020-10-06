@@ -15,7 +15,7 @@ Look the file [slo_example.yml](./examples/slo_example.yml) to see how to parame
 - [x] 1. Target Error Rate ≥ SLO Threshold, using `alertMethod: simple`
 - [x] 2. Increased Alert Window, using `alertMethod: simple`
 - [x] 3. Incrementing Alert Duration, using `alertMethod: simple`
-- [ ] 4. Alert on Burn Rate
+- [x] 4. Alert on Burn Rate `alertMethod: simple and burnRate: <rate>`
 - [x] 5. Multiple Burn Rate Alerts, using `alertMethod: multi-window and shortWindow: false`
 - [x] 6. Multiwindow, Multi-Burn-Rate Alerts, using `alertMethod: multi-window`
 
