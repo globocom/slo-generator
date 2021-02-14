@@ -33,7 +33,7 @@ func (*SimpleAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.Rule, 
 		}
 	}
 
-	ruleLabels := labels.New(labels.Label{"service", opts.ServiceName})
+	ruleLabels := labels.New(labels.Label{Name: "service", Value: opts.ServiceName})
 	errorLimit := 1 - opts.AvailabilityTarget/100
 	rules := []rulefmt.Rule{
 		{
@@ -92,7 +92,7 @@ func simpleLatency(opts *AlertLatencyOptions) string {
 	for _, target := range opts.Targets {
 		value := 1 - ((100 - target.Target) * 0.01)
 
-		lbs := labels.New(labels.Label{"service", opts.ServiceName}, labels.Label{"le", target.LE})
+		lbs := labels.New(labels.Label{Name: "service", Value: opts.ServiceName}, labels.Label{Name: "le", Value: target.LE})
 		condition := fmt.Sprintf(`slo:service_latency:ratio_rate_%s%s < %.3g * %.3g`, opts.AlertWindow, lbs.String(), burnRate, value)
 
 		conditions = append(conditions, condition)
