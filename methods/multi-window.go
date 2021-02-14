@@ -25,7 +25,7 @@ func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.R
 			Expr: multiBurnRate(MultiRateErrorOpts{
 				Rates:  ratesMap[severity],
 				Metric: "slo:service_errors_total",
-				Labels: labels.New(labels.Label{"service", opts.ServiceName}),
+				Labels: labels.New(labels.Label{Name: "service", Value: opts.ServiceName}),
 				Value:  1 - opts.AvailabilityTarget/100,
 			}),
 			Annotations: map[string]string{},
@@ -50,7 +50,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulef
 			Expr: multiBurnRateLatency(MultiRateLatencyOpts{
 				Rates:   ratesMap[severity],
 				Metric:  "slo:service_latency",
-				Label:   labels.Label{"service", opts.ServiceName},
+				Label:   labels.Label{Name: "service", Value: opts.ServiceName},
 				Buckets: opts.Targets,
 			}),
 			Annotations: map[string]string{},
@@ -166,7 +166,7 @@ func multiBurnRateLatency(opts MultiRateLatencyOpts) string {
 	for _, bucket := range opts.Buckets {
 		for _, window := range multiRateWindow {
 			value := (1 - ((100 - bucket.Target) / 100 * window.Multiplier))
-			lbs := labels.New(opts.Label, labels.Label{"le", bucket.LE})
+			lbs := labels.New(opts.Label, labels.Label{Name: "le", Value: bucket.LE})
 
 			condition := fmt.Sprintf(`%s:ratio_rate_%s%s < %.3g`, opts.Metric, window.LongWindow, lbs.String(), value)
 			if window.ShortWindow != "" {
