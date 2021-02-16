@@ -1,4 +1,5 @@
 PRECOMMIT_COMMAND := $(shell { command -v pre-commit; } 2>/dev/null)
+GOLANG_LINT_COMMAND := $(shell { command -v golangci-lint; } 2>/dev/null)
 
 test:
 	go test ./...
@@ -24,3 +25,13 @@ ifndef PRECOMMIT_COMMAND
 endif
 	@pre-commit install --install-hooks
 	@pre-commit install --hook-type pre-push
+
+.PHONY: lint
+lint:
+ifndef GOLANG_LINT_COMMAND
+	@echo "Command golangci-lint not found"
+	@echo "Please, run the following command as sudo to install it"
+	@echo "curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.33.1"
+	@exit 1
+endif
+	@golangci-lint run --out-format=github-actions
