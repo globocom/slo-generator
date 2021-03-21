@@ -1,0 +1,7 @@
+apiVersion: sre.globo.com/v2
+kind: SLI
+metadata:
+  name: sli-sample
+spec:
+  # Add fields here
+  foo: bar

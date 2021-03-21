@@ -5,4 +5,21 @@ plugins:
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: slo-operator
 repo: github.com/globocom/slo-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: sre.globo.com
+  kind: SLO
+  path: github.com/globocom/slo-operator/api/v2
+  version: v2
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: sre.globo.com
+  kind: SLI
+  path: github.com/globocom/slo-operator/api/v2
+  version: v2
 version: "3"

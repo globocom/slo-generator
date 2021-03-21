@@ -1,0 +1,7 @@
+apiVersion: sre.globo.com/v2
+kind: SLO
+metadata:
+  name: slo-sample
+spec:
+  # Add fields here
+  foo: bar
