@@ -59,6 +59,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		For:         model.Duration(time.Second * 5 * 60),
 		Annotations: slo.Annotations,
@@ -70,6 +71,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		For:         model.Duration(time.Second * 2 * 60),
 		Annotations: slo.Annotations,

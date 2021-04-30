@@ -43,6 +43,7 @@ func (*SimpleAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.Rule, 
 			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "page",
+				"signal":   "error",
 			},
 		},
 	}
@@ -72,6 +73,7 @@ func (*SimpleAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulefmt.Ru
 			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": "page",
+				"signal":   "latency",
 			},
 		},
 	}

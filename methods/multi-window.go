@@ -31,6 +31,7 @@ func (*MultiWindowAlgorithm) AlertForError(opts *AlertErrorOptions) ([]rulefmt.R
 			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": string(severity),
+				"signal":   "error",
 			},
 		})
 	}
@@ -56,6 +57,7 @@ func (*MultiWindowAlgorithm) AlertForLatency(opts *AlertLatencyOptions) ([]rulef
 			Annotations: map[string]string{},
 			Labels: map[string]string{
 				"severity": string(severity),
+				"signal":   "latency",
 			},
 		})
 	}

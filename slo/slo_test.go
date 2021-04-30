@@ -70,6 +70,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
+					"signal":  "error",
 				},
 			},
 			{
@@ -79,6 +80,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
 					"le":      "0.1",
+					"signal":  "latency",
 				},
 			},
 			{
@@ -88,6 +90,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
 					"le":      "0.5",
+					"signal":  "latency",
 				},
 			},
 
@@ -106,6 +109,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
+					"signal":  "error",
 				},
 			},
 			{
@@ -115,6 +119,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"le":      "0.1",
 					"team":    "team-avengers",
+					"signal":  "latency",
 				},
 			},
 			{
