@@ -51,7 +51,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	groupRules := slo.GenerateGroupRules(nil, false)
 	assert.Len(t, groupRules, 3)
 
-	assert.Equal(t, groupRules[0], rulefmt.RuleGroup{
+	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:short",
 		Interval: model.Duration(time.Second * 30),
 		Rules: []rulefmt.Rule{
@@ -70,7 +70,6 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
-					"signal":  "error",
 				},
 			},
 			{
@@ -80,7 +79,6 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
 					"le":      "0.1",
-					"signal":  "latency",
 				},
 			},
 			{
@@ -90,7 +88,6 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
 					"le":      "0.5",
-					"signal":  "latency",
 				},
 			},
 
@@ -109,7 +106,6 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				Labels: map[string]string{
 					"service": "my-team.my-service.payment",
 					"team":    "team-avengers",
-					"signal":  "error",
 				},
 			},
 			{
@@ -119,7 +115,6 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"service": "my-team.my-service.payment",
 					"le":      "0.1",
 					"team":    "team-avengers",
-					"signal":  "latency",
 				},
 			},
 			{
@@ -168,9 +163,9 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, groupRules[0])
 
-	assert.Equal(t, groupRules[1], rulefmt.RuleGroup{
+	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:medium",
 		Interval: model.Duration(time.Second * 120),
 		Rules: []rulefmt.Rule{
@@ -246,9 +241,9 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, groupRules[1])
 
-	assert.Equal(t, groupRules[2], rulefmt.RuleGroup{
+	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:daily",
 		Interval: model.Duration(time.Second * 300),
 		Rules: []rulefmt.Rule{
@@ -324,7 +319,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 				},
 			},
 		},
-	})
+	}, groupRules[2])
 }
 
 func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
@@ -706,27 +701,29 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[1])
 
-	assert.Equal(t, alertRules[2], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -749,11 +746,12 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[2])
 
-	assert.Equal(t, alertRules[3], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -776,9 +774,10 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithInvalidAlert(t *testing.T) {
@@ -888,27 +887,29 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[1])
 
-	assert.Equal(t, alertRules[2], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -931,11 +932,12 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[2])
 
-	assert.Equal(t, alertRules[3], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -958,9 +960,10 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
@@ -1024,17 +1027,18 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 2)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (36 * 0.001)",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
 			" or " +
@@ -1043,9 +1047,10 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[1])
 }
 
 func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
@@ -1083,27 +1088,29 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[1])
 
-	assert.Equal(t, alertRules[2], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1126,11 +1133,12 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[2])
 
-	assert.Equal(t, alertRules[3], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -1153,9 +1161,10 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
@@ -1203,27 +1212,29 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(sloClass, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[1])
 
-	assert.Equal(t, alertRules[2], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1246,11 +1257,12 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[2])
 
-	assert.Equal(t, alertRules[3], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -1273,9 +1285,10 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "ticket",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[3])
 
 	alertRules = slo.GenerateAlertRules(noLatencyClass, false)
 	assert.Len(t, alertRules, 2)
@@ -1316,17 +1329,18 @@ func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, true)
 	assert.Len(t, alertRules, 2)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	})
+	}, alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1349,10 +1363,10 @@ func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
 		Labels: map[string]string{
 			"channel":  "my-channel",
 			"severity": "page",
+			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	})
-
+	}, alertRules[1])
 }
 
 func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
