@@ -9,7 +9,7 @@ require (
 	github.com/prometheus/common v0.6.0
 	github.com/prometheus/prometheus v0.0.0-20190525122359-d20e84d0fb64
 	github.com/prometheus/tsdb v0.10.0 // indirect
-	github.com/stretchr/testify v1.5.1
-	gopkg.in/yaml.v2 v2.2.8
-	k8s.io/apimachinery v0.18.3
+	github.com/stretchr/testify v1.7.0
+	gopkg.in/yaml.v2 v2.4.0
+	k8s.io/apimachinery v0.22.2
 )
