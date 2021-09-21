@@ -89,12 +89,12 @@ func main() {
 				log.Fatal(err)
 			}
 			if i > 0 {
-				err = output.Write([]byte("---\n"))
+				_, err = output.Write([]byte("---\n"))
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
-			err = output.Write(b)
+			_, err = output.Write(b)
 			if err != nil {
 				log.Fatal(err)
 			}
