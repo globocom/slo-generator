@@ -43,6 +43,16 @@ After that, you can run the command specifying the classes:
 slo-generator -slo.path=slo_example_with_classes.yml -classes.path slo_classes.yml -rule.output rule.yml
 ```
 
+# Kubernetes integration
+
+We support to export SLOs as a well known [PrometheusRule](https://github.com/prometheus-operator/prometheus-operator) resources managed by prometheus-operator, just use `-kubernetes` flag, example:
+
+```
+slo-generator -kubernetes -slo.path=slo_example.yml > slo_manifest.yml
+cat slo_manifest.yml
+kubectl apply -f slo_manifest.yml
+```
+
 # Grafana integration
 
 All generated SLOs are visible by grafana:
