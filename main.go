@@ -89,9 +89,15 @@ func main() {
 				log.Fatal(err)
 			}
 			if i > 0 {
-				output.Write([]byte("---\n"))
+				err = output.Write([]byte("---\n"))
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-			output.Write(b)
+			err = output.Write(b)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 		if ruleOutput != "" {
 			log.Printf("generated a kubernetes manifest record in %q", ruleOutput)
