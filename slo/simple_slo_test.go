@@ -53,7 +53,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 2)
 
-	assert.Equal(t, alertRules[0], rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > 2 * 0.001",
 		Labels: map[string]string{
@@ -63,9 +63,9 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 		},
 		For:         model.Duration(time.Second * 5 * 60),
 		Annotations: slo.Annotations,
-	})
+	}), alertRules[0])
 
-	assert.Equal(t, alertRules[1], rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr:  "slo:service_latency:ratio_rate_30m{le=\"0.1\", service=\"my-team.my-service.payment\"} < 2 * 0.95 or slo:service_latency:ratio_rate_30m{le=\"0.5\", service=\"my-team.my-service.payment\"} < 2 * 0.99",
 		Labels: map[string]string{
@@ -75,7 +75,7 @@ func TestSimpleSLOGenerateAlertRules(t *testing.T) {
 		},
 		For:         model.Duration(time.Second * 2 * 60),
 		Annotations: slo.Annotations,
-	})
+	}), alertRules[1])
 }
 
 func TestSimpleSLOInvalid(t *testing.T) {

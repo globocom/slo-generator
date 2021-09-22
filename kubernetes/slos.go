@@ -74,7 +74,7 @@ func kubernetizeRuleGroups(groups []rulefmt.RuleGroup) []monitoringv1.RuleGroup 
 	return result
 }
 
-func kubernetizeRules(rules []rulefmt.Rule) []monitoringv1.Rule {
+func kubernetizeRules(rules []rulefmt.RuleNode) []monitoringv1.Rule {
 	result := []monitoringv1.Rule{}
 	for _, rule := range rules {
 		ruleFor := rule.For.String()
@@ -82,9 +82,9 @@ func kubernetizeRules(rules []rulefmt.Rule) []monitoringv1.Rule {
 			ruleFor = ""
 		}
 		result = append(result, monitoringv1.Rule{
-			Record:      rule.Record,
-			Alert:       rule.Alert,
-			Expr:        intstr.FromString(rule.Expr),
+			Record:      rule.Record.Value,
+			Alert:       rule.Alert.Value,
+			Expr:        intstr.FromString(rule.Expr.Value),
 			For:         ruleFor,
 			Labels:      rule.Labels,
 			Annotations: rule.Annotations,

@@ -54,7 +54,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:short",
 		Interval: model.Duration(time.Second * 30),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 5m
 			{
 				Record: "slo:service_traffic:ratio_rate_5m",
@@ -162,13 +162,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"team":    "team-avengers",
 				},
 			},
-		},
+		}),
 	}, groupRules[0])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:medium",
 		Interval: model.Duration(time.Second * 120),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 2h
 			{
 				Record: "slo:service_traffic:ratio_rate_2h",
@@ -240,13 +240,13 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"le":      "0.5",
 				},
 			},
-		},
+		}),
 	}, groupRules[1])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:daily",
 		Interval: model.Duration(time.Second * 300),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 1d
 			{
 				Record: "slo:service_traffic:ratio_rate_1d",
@@ -318,7 +318,7 @@ func TestSLOGenerateGroupRules(t *testing.T) {
 					"le":      "0.5",
 				},
 			},
-		},
+		}),
 	}, groupRules[2])
 }
 
@@ -337,7 +337,7 @@ func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:short",
 		Interval: model.Duration(time.Second * 30),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 5m
 			{
 				Record: "slo:service_latency:p50_5m",
@@ -386,13 +386,13 @@ func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
 				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[1h])))",
 				Labels: map[string]string{},
 			},
-		},
+		}),
 	}, groupRules[0])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:medium",
 		Interval: model.Duration(time.Second * 120),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 2h
 			{
 				Record: "slo:service_latency:p50_2h",
@@ -425,13 +425,13 @@ func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
 				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[6h])))",
 				Labels: map[string]string{},
 			},
-		},
+		}),
 	}, groupRules[1])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:daily",
 		Interval: model.Duration(time.Second * 300),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 1d
 			{
 				Record: "slo:service_latency:p50_1d",
@@ -465,7 +465,7 @@ func TestSLOGenerateGroupRulesWithLatencyQuantile(t *testing.T) {
 				Expr:   "histogram_quantile(0.99, sum by (le) (rate(http_total[3d])))",
 				Labels: map[string]string{},
 			},
-		},
+		}),
 	}, groupRules[2])
 }
 
@@ -495,7 +495,7 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:short",
 		Interval: model.Duration(time.Second * 30),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 5m
 			{
 				Record: "slo:service_traffic:ratio_rate_5m",
@@ -559,13 +559,13 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(bucket{le=\"1.0\"}[1h])/sum(bucket{le=\"+Inf\"}[1h])",
 				Labels: map[string]string{"le": "1.0"},
 			},
-		},
+		}),
 	}, groupRules[0])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:medium",
 		Interval: model.Duration(time.Second * 120),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 2h
 			{
 				Record: "slo:service_traffic:ratio_rate_2h",
@@ -609,13 +609,13 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(bucket{le=\"1.0\"}[6h])/sum(bucket{le=\"+Inf\"}[6h])",
 				Labels: map[string]string{"le": "1.0"},
 			},
-		},
+		}),
 	}, groupRules[1])
 
 	assert.Equal(t, rulefmt.RuleGroup{
 		Name:     "slo:auto-discover-services:daily",
 		Interval: model.Duration(time.Second * 300),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 1d
 			{
 				Record: "slo:service_traffic:ratio_rate_1d",
@@ -660,7 +660,7 @@ func TestSLOGenerateGroupRulesWithAutoDiscovery(t *testing.T) {
 				Expr:   "sum(bucket{le=\"1.0\"}[3d])/sum(bucket{le=\"+Inf\"}[3d])",
 				Labels: map[string]string{"le": "1.0"},
 			},
-		},
+		}),
 	}, groupRules[2])
 }
 
@@ -701,7 +701,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
@@ -710,9 +710,9 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
@@ -721,9 +721,9 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -749,9 +749,9 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[2])
+	}), alertRules[2])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -777,7 +777,7 @@ func TestSLOGenerateAlertRules(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[3])
+	}), alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithInvalidAlert(t *testing.T) {
@@ -887,7 +887,7 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
@@ -896,9 +896,9 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
@@ -907,9 +907,9 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -935,9 +935,9 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[2])
+	}), alertRules[2])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -963,7 +963,7 @@ func TestSLOGenerateAlertRulesWithCustomWindows(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[3])
+	}), alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
@@ -1027,7 +1027,7 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 2)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (36 * 0.001)",
 		Labels: map[string]string{
@@ -1036,9 +1036,9 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
 			" or " +
@@ -1050,7 +1050,7 @@ func TestSLOGenerateAlertRulesWithSingleBurnRate(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 }
 
 func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
@@ -1088,7 +1088,7 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
@@ -1097,9 +1097,9 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
@@ -1108,9 +1108,9 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1136,9 +1136,9 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[2])
+	}), alertRules[2])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -1164,7 +1164,7 @@ func TestSLOGenerateAlertRulesWithoutExpressions(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[3])
+	}), alertRules[3])
 }
 
 func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
@@ -1212,7 +1212,7 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(sloClass, false)
 	assert.Len(t, alertRules, 4)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
@@ -1221,9 +1221,9 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.ticket",
 		Expr:  "(slo:service_errors_total:ratio_rate_1d{service=\"my-team.my-service.payment\"} > (3 * 0.001) and slo:service_errors_total:ratio_rate_2h{service=\"my-team.my-service.payment\"} > (3 * 0.001)) or (slo:service_errors_total:ratio_rate_3d{service=\"my-team.my-service.payment\"} > (1 * 0.001) and slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (1 * 0.001))",
 		Labels: map[string]string{
@@ -1232,9 +1232,9 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1260,9 +1260,9 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[2])
+	}), alertRules[2])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.ticket",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1d{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.85" +
@@ -1288,7 +1288,7 @@ func TestSLOGenerateAlertRulesWithSLOCLass(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[3])
+	}), alertRules[3])
 
 	alertRules = slo.GenerateAlertRules(noLatencyClass, false)
 	assert.Len(t, alertRules, 2)
@@ -1329,7 +1329,7 @@ func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
 	alertRules := slo.GenerateAlertRules(nil, true)
 	assert.Len(t, alertRules, 2)
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.errors.page",
 		Expr:  "(slo:service_errors_total:ratio_rate_1h{service=\"my-team.my-service.payment\"} > (14.4 * 0.001) and slo:service_errors_total:ratio_rate_5m{service=\"my-team.my-service.payment\"} > (14.4 * 0.001)) or (slo:service_errors_total:ratio_rate_6h{service=\"my-team.my-service.payment\"} > (6 * 0.001) and slo:service_errors_total:ratio_rate_30m{service=\"my-team.my-service.payment\"} > (6 * 0.001))",
 		Labels: map[string]string{
@@ -1338,9 +1338,9 @@ func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
 			"signal":   "error",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[0])
+	}), alertRules[0])
 
-	assert.Equal(t, rulefmt.Rule{
+	assert.Equal(t, ruleNode(rulefmt.Rule{
 		Alert: "slo:my-team.my-service.payment.latency.page",
 		Expr: ("(" +
 			"slo:service_latency:ratio_rate_1h{le=\"0.1\", service=\"my-team.my-service.payment\"} < 0.28" +
@@ -1366,7 +1366,7 @@ func TestSLOGenerateAlertRulesWithoutTickets(t *testing.T) {
 			"signal":   "latency",
 		},
 		Annotations: slo.Annotations,
-	}, alertRules[1])
+	}), alertRules[1])
 }
 
 func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
@@ -1412,7 +1412,7 @@ func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
 	assert.Equal(t, groupRules[0], rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:short",
 		Interval: model.Duration(time.Second * 30),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 5m
 			{
 				Record: "slo:service_traffic:ratio_rate_5m",
@@ -1520,13 +1520,13 @@ func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
 					"team":    "team-avengers",
 				},
 			},
-		},
+		}),
 	})
 
 	assert.Equal(t, groupRules[1], rulefmt.RuleGroup{
 		Name:     "slo:my-team.my-service.payment:medium",
 		Interval: model.Duration(time.Second * 120),
-		Rules: []rulefmt.Rule{
+		Rules: ruleNodes([]rulefmt.Rule{
 			// 6h
 			{
 				Record: "slo:service_traffic:ratio_rate_6h",
@@ -1562,6 +1562,6 @@ func TestSLOGenerateGroupRulesWithoutTickets(t *testing.T) {
 					"le":      "0.5",
 				},
 			},
-		},
+		}),
 	})
 }

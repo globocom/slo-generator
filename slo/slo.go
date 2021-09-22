@@ -99,13 +99,13 @@ func (o *Objectives) LatencyBuckets() []string {
 	return latencyBuckets
 }
 
-func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefmt.Rule {
+func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefmt.RuleNode {
 	objectives := slo.Objectives
 	if sloClass != nil {
 		objectives = sloClass.Objectives
 	}
 
-	var alertRules []rulefmt.Rule
+	var alertRules []rulefmt.RuleNode
 
 	if slo.ErrorRateRecord.AlertMethod != "" {
 		errorMethod := methods.Get(slo.ErrorRateRecord.AlertMethod)
@@ -126,7 +126,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 		if err != nil {
 			log.Panicf("Could not generate alert, err: %s", err.Error())
 		}
-		alertRules = append(alertRules, errorRules...)
+		alertRules = append(alertRules, ruleNodes(errorRules)...)
 	}
 
 	if slo.LatencyRecord.AlertMethod != "" {
@@ -149,7 +149,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 			if err != nil {
 				log.Panicf("Could not generate alert, err: %s", err.Error())
 			}
-			alertRules = append(alertRules, latencyRules...)
+			alertRules = append(alertRules, ruleNodes(latencyRules)...)
 		}
 	}
 
@@ -158,7 +158,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 	}
 
 	if disableTicket {
-		var alertRulesWithoutTicket []rulefmt.Rule
+		var alertRulesWithoutTicket []rulefmt.RuleNode
 
 		for _, rule := range alertRules {
 			if rule.Labels["severity"] != "ticket" {
@@ -172,7 +172,7 @@ func (slo *SLO) GenerateAlertRules(sloClass *Class, disableTicket bool) []rulefm
 	return alertRules
 }
 
-func (slo *SLO) fillMetadata(rule *rulefmt.Rule) {
+func (slo *SLO) fillMetadata(rule *rulefmt.RuleNode) {
 	for label, value := range slo.Labels {
 		rule.Labels[label] = value
 	}
@@ -203,7 +203,7 @@ func (slo *SLO) GenerateGroupRules(sloClass *Class, disableTicket bool) []rulefm
 		ruleGroup := rulefmt.RuleGroup{
 			Name:     fmt.Sprintf("slo:%s:%s", slo.Name, sample.Name),
 			Interval: interval,
-			Rules:    []rulefmt.Rule{},
+			Rules:    []rulefmt.RuleNode{},
 		}
 
 		for _, bucket := range sample.Buckets {
@@ -233,48 +233,48 @@ func (slo *SLO) labels() map[string]string {
 	return labels
 }
 
-func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.Rule {
-	var rules []rulefmt.Rule
+func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.RuleNode {
+	var rules []rulefmt.RuleNode
 	if slo.TrafficRateRecord.Expr != "" {
-		trafficRateRecord := rulefmt.Rule{
-			Record: fmt.Sprintf("slo:service_traffic:ratio_rate_%s", bucket),
-			Expr:   slo.TrafficRateRecord.ComputeExpr(bucket, ""),
+		trafficRateRecord := rulefmt.RuleNode{
 			Labels: slo.labels(),
 		}
+
+		trafficRateRecord.Record.SetString(fmt.Sprintf("slo:service_traffic:ratio_rate_%s", bucket))
+		trafficRateRecord.Expr.SetString(slo.TrafficRateRecord.ComputeExpr(bucket, ""))
 
 		rules = append(rules, trafficRateRecord)
 	}
 
 	if slo.ErrorRateRecord.Expr != "" {
-		errorRateRecord := rulefmt.Rule{
-			Record: fmt.Sprintf("slo:service_errors_total:ratio_rate_%s", bucket),
-			Expr:   slo.ErrorRateRecord.ComputeExpr(bucket, ""),
+		errorRateRecord := rulefmt.RuleNode{
 			Labels: slo.labels(),
 		}
 
+		errorRateRecord.Record.SetString(fmt.Sprintf("slo:service_errors_total:ratio_rate_%s", bucket))
+		errorRateRecord.Expr.SetString(slo.ErrorRateRecord.ComputeExpr(bucket, ""))
 		rules = append(rules, errorRateRecord)
 	}
 
 	if slo.LatencyQuantileRecord.Expr != "" {
 		for _, quantile := range quantiles {
-			latencyQuantileRecord := rulefmt.Rule{
-				Record: fmt.Sprintf("slo:service_latency:%s_%s", quantile.name, bucket),
-				Expr:   slo.LatencyQuantileRecord.ComputeQuantile(bucket, quantile.quantile),
+			latencyQuantileRecord := rulefmt.RuleNode{
 				Labels: slo.labels(),
 			}
 
+			latencyQuantileRecord.Record.SetString(fmt.Sprintf("slo:service_latency:%s_%s", quantile.name, bucket))
+			latencyQuantileRecord.Expr.SetString(slo.LatencyQuantileRecord.ComputeQuantile(bucket, quantile.quantile))
 			rules = append(rules, latencyQuantileRecord)
 		}
 	}
 
 	if slo.LatencyRecord.Expr != "" {
 		for _, latencyBucket := range latencyBuckets {
-			latencyRateRecord := rulefmt.Rule{
-				Record: "slo:service_latency:ratio_rate_" + bucket,
-				Expr:   slo.LatencyRecord.ComputeExpr(bucket, latencyBucket),
+			latencyRateRecord := rulefmt.RuleNode{
 				Labels: slo.labels(),
 			}
-
+			latencyRateRecord.Record.SetString("slo:service_latency:ratio_rate_" + bucket)
+			latencyRateRecord.Expr.SetString(slo.LatencyRecord.ComputeExpr(bucket, latencyBucket))
 			latencyRateRecord.Labels["le"] = latencyBucket
 
 			rules = append(rules, latencyRateRecord)
@@ -282,4 +282,36 @@ func (slo *SLO) generateRules(bucket string, latencyBuckets []string) []rulefmt.
 	}
 
 	return rules
+}
+
+func ruleNodes(origin []rulefmt.Rule) []rulefmt.RuleNode {
+	result := make([]rulefmt.RuleNode, len(origin))
+
+	for i := range origin {
+		result[i] = ruleNode(origin[i])
+	}
+
+	return result
+}
+
+func ruleNode(origin rulefmt.Rule) rulefmt.RuleNode {
+	result := rulefmt.RuleNode{}
+
+	if origin.Alert != "" {
+		result.Alert.SetString(origin.Alert)
+	}
+
+	if origin.Record != "" {
+		result.Record.SetString(origin.Record)
+	}
+
+	if origin.Expr != "" {
+		result.Expr.SetString(origin.Expr)
+	}
+
+	result.For = origin.For
+	result.Labels = origin.Labels
+	result.Annotations = origin.Annotations
+
+	return result
 }
