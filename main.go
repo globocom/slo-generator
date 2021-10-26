@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	ghodssYaml "github.com/ghodss/yaml"
 	"github.com/globocom/slo-generator/kubernetes"
@@ -19,6 +21,7 @@ func main() {
 		sloPath       = ""
 		classesPath   = ""
 		ruleOutput    = ""
+		k8sLabels     = ""
 		disableTicket = false
 		k8s           = false
 	)
@@ -27,6 +30,7 @@ func main() {
 	flag.StringVar(&ruleOutput, "rule.output", "", "Output to describe a prometheus rules")
 	flag.BoolVar(&disableTicket, "disable.ticket", false, "Disable generation of alerts of kind ticket")
 	flag.BoolVar(&k8s, "kubernetes", false, "Generates prometheus-operator YAML")
+	flag.StringVar(&k8sLabels, "kubernetes-labels", "", "Add some labels in generated resource")
 
 	flag.Parse()
 
@@ -67,6 +71,14 @@ func main() {
 	}
 
 	if k8s {
+		labels := map[string]string{}
+		if k8sLabels != "" {
+			labels, err = parseLabels(k8sLabels)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		manifests := []monitoringv1.PrometheusRule{}
 		for _, slo := range spec.SLOS {
 			// try to use any slo class found
@@ -83,6 +95,13 @@ func main() {
 		}
 
 		for i, manifest := range manifests {
+			if manifest.Labels == nil {
+				manifest.Labels = map[string]string{}
+			}
+			for key, value := range labels {
+				manifest.Labels[key] = value
+			}
+
 			b, err := ghodssYaml.Marshal(manifest)
 
 			if err != nil {
@@ -126,6 +145,19 @@ func main() {
 	if ruleOutput != "" {
 		log.Printf("generated a SLO record in %q", ruleOutput)
 	}
+}
+
+func parseLabels(labels string) (map[string]string, error) {
+	result := map[string]string{}
+	for _, part := range strings.Split(labels, ",") {
+		parts := strings.Split(part, "=")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid label %q", part)
+		}
+		result[parts[0]] = parts[1]
+	}
+
+	return result, nil
 }
 
 // readClassesDefinition read SLO classes from filesystem
