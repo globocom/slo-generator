@@ -13,7 +13,7 @@ import (
 	"github.com/globocom/slo-generator/slo"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/prometheus/prometheus/pkg/rulefmt"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 func main() {
