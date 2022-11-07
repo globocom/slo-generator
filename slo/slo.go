@@ -32,7 +32,8 @@ var quantiles = []struct {
 }
 
 type SLOSpec struct {
-	SLOS []SLO
+	SLOS    []SLO   `yaml:"slos"`
+	Classes Classes `yaml:"classes"`
 }
 
 type ExprBlock struct {

@@ -66,6 +66,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if len(spec.Classes) > 0 && len(classesDefinition.Classes) > 0 {
+		log.Fatal("you can not define classes in slo and classes files")
+	} else if len(classesDefinition.Classes) > 0 {
+		spec.Classes = classesDefinition.Classes
+	}
+
 	ruleGroups := &rulefmt.RuleGroups{
 		Groups: []rulefmt.RuleGroup{},
 	}
@@ -82,7 +88,7 @@ func main() {
 		manifests := []monitoringv1.PrometheusRule{}
 		for _, slo := range spec.SLOS {
 			// try to use any slo class found
-			sloClass, err := classesDefinition.FindClass(slo.Class)
+			sloClass, err := spec.Classes.FindClass(slo.Class)
 			if err != nil {
 				log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
 			}
@@ -126,7 +132,7 @@ func main() {
 
 	for _, slo := range spec.SLOS {
 		// try to use any slo class found
-		sloClass, err := classesDefinition.FindClass(slo.Class)
+		sloClass, err := spec.Classes.FindClass(slo.Class)
 		if err != nil {
 			log.Fatalf("Could not compile SLO: %q, err: %q", slo.Name, err.Error())
 		}

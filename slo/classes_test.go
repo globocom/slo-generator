@@ -14,15 +14,15 @@ func TestFindClass(t *testing.T) {
 		},
 	}
 
-	class, err := definition.FindClass("HIGH")
+	class, err := definition.Classes.FindClass("HIGH")
 	assert.NoError(t, err)
 	assert.Equal(t, &definition.Classes[0], class)
 
-	class, err = definition.FindClass("NOTFOUND")
+	class, err = definition.Classes.FindClass("NOTFOUND")
 	assert.EqualError(t, err, "SLO class \"NOTFOUND\" is not found")
 	assert.Nil(t, class)
 
-	class, err = definition.FindClass("")
+	class, err = definition.Classes.FindClass("")
 	assert.Nil(t, err)
 	assert.Nil(t, class)
 }

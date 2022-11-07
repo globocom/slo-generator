@@ -11,15 +11,17 @@ type Class struct {
 }
 
 type ClassesDefinition struct {
-	Classes []Class `yaml:"classes"`
+	Classes Classes `yaml:"classes"`
 }
 
+type Classes []Class
+
 // FindClass finds for a given name, if not found return an error
-func (c *ClassesDefinition) FindClass(name string) (*Class, error) {
+func (c Classes) FindClass(name string) (*Class, error) {
 	if name == "" {
 		return nil, nil
 	}
-	for _, class := range c.Classes {
+	for _, class := range c {
 		if class.Name == name {
 			return &class, nil
 		}
