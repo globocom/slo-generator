@@ -3,6 +3,7 @@ package slo
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -12,6 +13,85 @@ import (
 
 	"github.com/prometheus/prometheus/pkg/rulefmt"
 )
+
+
+var (
+	validWindowPattern  = regexp.MustCompile(`^[0-9]+[smhd]$`)
+	validLEPattern      = regexp.MustCompile(`^[0-9]+(\.[0-9]+)?$`)
+	validQuantilePattern = regexp.MustCompile(`^[0-9]+(\.[0-9]+)?$`)
+)
+
+
+func isValidWindow(window string) bool {
+	return validWindowPattern.MatchString(window)
+}
+
+
+func isValidLE(le string) bool {
+	return validLEPattern.MatchString(le)
+}
+
+
+func isValidQuantile(quantile float64) bool {
+	return quantile >= 0 && quantile <= 1
+}
+
+func safeReplace(expr string, replacements map[string]string) (string, error) {
+	result := expr
+	for placeholder, value := range replacements {
+		// Validar baseado no tipo de placeholder
+		switch placeholder {
+		case "$window":
+			if !isValidWindow(value) {
+				return "", fmt.Errorf("invalid window format: %s", value)
+			}
+		case "$le":
+			if !isValidLE(value) {
+				return "", fmt.Errorf("invalid le format: %s", value)
+			}
+		case "$quantile":
+			if !validQuantilePattern.MatchString(value) {
+				return "", fmt.Errorf("invalid quantile format: %s", value)
+			}
+		}
+		
+		result = strings.ReplaceAll(result, placeholder, value)
+	}
+	return result, nil
+}
+
+func (block *ExprBlock) ComputeExpr(window, le string) string {
+	replacements := map[string]string{
+		"$window": window,
+		"$le":     le,
+	}
+	
+	result, err := safeReplace(block.Expr, replacements)
+	if err != nil {
+		log.Printf("Security validation failed in ComputeExpr: %v", err)
+		return ""
+	}
+	
+	return result
+}
+
+func (block *ExprBlock) ComputeQuantile(window string, quantile float64) string {
+	quantileStr := fmt.Sprintf("%g", quantile)
+	
+	replacements := map[string]string{
+		"$window":   window,
+		"$quantile": quantileStr,
+	}
+	
+	result, err := safeReplace(block.Expr, replacements)
+	if err != nil {
+		log.Printf("Security validation failed in ComputeQuantile: %v", err)
+		return ""
+	}
+	
+	return result
+}
+
 
 var quantiles = []struct {
 	name     string
