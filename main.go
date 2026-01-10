@@ -46,7 +46,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer targetFile.Close()
+		defer func() {
+			err = targetFile.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 		output = targetFile
 	}
 

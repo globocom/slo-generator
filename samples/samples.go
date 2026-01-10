@@ -52,5 +52,5 @@ func ValidateSample(sample string) error {
 			validSamples = append(validSamples, bucket)
 		}
 	}
-	return fmt.Errorf("Sample %s is not a valid sample, valid samples: %s", sample, strings.Join(validSamples, ","))
+	return fmt.Errorf("sample %s is not a valid sample, valid samples: %s", sample, strings.Join(validSamples, ","))
 }
