@@ -116,7 +116,7 @@ func TestSimpleSLOInvalid(t *testing.T) {
 		},
 	}
 
-	assert.PanicsWithValue(t, "Could not generate alert, err: Sample 22m is not a valid sample, valid samples: 5m,30m,1h,2h,6h,1d,3d", func() {
+	assert.PanicsWithValue(t, "Could not generate alert, err: sample 22m is not a valid sample, valid samples: 5m,30m,1h,2h,6h,1d,3d", func() {
 		slo.GenerateAlertRules(nil, false)
 	})
 }
